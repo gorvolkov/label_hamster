@@ -1,1 +1,4 @@
 python-barcode~=0.15.1
+pypdf~=5.5.0
+pandas~=2.2.3
+requests~=2.32.3

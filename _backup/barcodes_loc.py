@@ -7,7 +7,7 @@ from barcode.writer import SVGWriter
 # https://python-barcode.readthedocs.io/en/stable/getting-started.html#installation
 
 ean_code = "3831120901840"
-output_dir = "barcodes"
+output_dir = "../barcodes"
 file_name = "test1"
 my_file_path = f"{output_dir}/{file_name}.svg"
 

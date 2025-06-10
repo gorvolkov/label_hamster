@@ -1,9 +1,8 @@
 import os
 from fpdf import FPDF
-from fpdf.enums import XPos, YPos
-from models import MusicInstrument
+from models_old import MusicInstrument
 
-def create_instrument_pdf(instrument: MusicInstrument, output_dir: str):
+def create_label_pdf(instrument: MusicInstrument, output_dir: str):
     arial_regular = r"C:\Windows\Fonts\arial.ttf"
     arial_bold = r"C:\Windows\Fonts\arialbd.ttf"
     arial_italic = r"C:\Windows\Fonts\ariali.ttf"
@@ -107,4 +106,4 @@ if __name__ == "__main__":
     }
 
     instrument = MusicInstrument.from_dict(instrument_data)
-    create_instrument_pdf(instrument, output_dir="label_output")
+    create_label_pdf(instrument, output_dir="../labels")

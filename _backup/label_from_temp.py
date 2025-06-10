@@ -80,7 +80,7 @@ def create_label(temp_path, output_path, music_instrument):
 
         add_barcode_to_pdf(output_path, output_path, music_instrument.barcode, x_pt, y_pt, barcode_width_pt)
 
-    print(f"PDF сохранён: {output_path}")
+    print(f"Label created: {output_path}")
 
 
 if __name__ == "__main__":
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     }
 
     instrument = MusicInstrument.from_dict(instrument_data)
-    create_label("label_temp/temp_1.pdf", "label_output/test-2.pdf", instrument)
+    create_label("label_temp/temp_1.pdf", "labels/test-2.pdf", instrument)

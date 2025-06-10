@@ -9,7 +9,7 @@ TEST_NUM = 11
 
 input_svg_path = "label_examples/_PROTO.svg"
 output_svg_path = f"label_output/test{TEST_NUM}.svg"
-barcode_path = "barcodes/1.png"
+barcode_path = "../barcodes/1.png"
 
 ns = {
     'svg': 'http://www.w3.org/2000/svg',

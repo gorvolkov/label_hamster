@@ -10,7 +10,7 @@ if __name__ == "__main__":
     print("Welcome to Label Hamster! I eat excel sheets and poop with pdf labels.\n")
 
     # путь до Excel-файла
-    EXCEL_FILE = "xls_files/_INPUT_DATA_TEMPLATE v.2.xlsx"
+    EXCEL_FILE = "xls_files/_INPUT_DATA_3.xlsx"
 
     # лист Excel-файла
     SHEET = "List1"
@@ -29,10 +29,10 @@ if __name__ == "__main__":
         print(f"Processing: {num} {instrument.name}, EAN {instrument.ean13}")
 
         # получаем штрих-код из orcascan
-        # instrument.barcode = generate_with_orcascan(file_name=num, ean=instrument.ean13)
+        instrument.barcode = generate_with_orcascan(file_name=num, ean=instrument.ean13)
 
-        # костыль для тестирования, потому что отлетел интернет
-        instrument.barcode = "barcodes/1.png"
+        # # костыль для тестирования, потому что отлетел интернет
+        # instrument.barcode = "barcodes/1.png"
 
         # создаём этикетку
         create_label_pdf(instrument, label_num=num, output_dir=OUTPUT_DIR)

@@ -1,6 +1,5 @@
 import logging
 
-
 class LoggerFormatter(logging.Formatter):
     """Форматтер для логгера. Красит сообщения в разные цвета"""
 
@@ -13,7 +12,7 @@ class LoggerFormatter(logging.Formatter):
         'ERROR': '\033[31m',  # красный
     }
     # message format
-    MSG_FMT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    MSG_FMT = '%(name)s - %(levelname)s - %(message)s'
 
     def __init__(self):
         super().__init__(fmt=self.MSG_FMT)
@@ -24,7 +23,7 @@ class LoggerFormatter(logging.Formatter):
         return f"{color}{colored_msg}{self.RESET}"
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("LABEL HAMSTER")
 logger.setLevel(logging.DEBUG)
 
 logger_handler = logging.StreamHandler()
@@ -34,3 +33,4 @@ logger_formatter = LoggerFormatter()
 logger_handler.setFormatter(logger_formatter)
 
 logger.addHandler(logger_handler)
+

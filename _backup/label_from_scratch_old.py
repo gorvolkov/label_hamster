@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "extra": "Срок службы 3 года. Страна изготовления: Китай. Соответствует требованиям безопасности электротехнического оборудования и т.д. и т.п.",
         "barcode": r"barcodes/1.png",
         "ean": "1234567890123",
-        "ce": "EAC"
+        "ce": "static"
     }
 
     instrument = MusicInstrument.from_dict(instrument_data)

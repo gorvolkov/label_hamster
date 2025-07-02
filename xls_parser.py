@@ -1,0 +1,35 @@
+import pandas as pd
+
+def check_xls(required: set, xls: str, sheet: str):
+    """Check that all the necessary columns are present in the excel table"""
+    df = pd.read_excel(xls, sheet_name=sheet, nrows=0)  # read first row
+    df = df.map(lambda x: x.strip())    # strip all spaces
+    columns = set(df.columns)
+
+    if columns != required:
+        missing = required - columns
+        extra = columns - required
+        error_msg = "Incorrect fields in the input table."
+        if missing:
+            error_msg += f" Missing fields: {missing}."
+        if extra:
+            error_msg += f" Unexpected fields: {extra}."
+        raise ValueError(error_msg)
+
+
+# парсит сырые данные из Эксель, возвращает словарь, ключами которого являются названия столбцов (1 строка)
+def parse_xls(xls: str, sheet: str) -> list[dict]:
+    """
+    Parses raw data from Excel
+
+    :param xls: path to Excel doc
+    :param sheet: sheet name in the Excel doc
+    :return: a dictionary whose keys are column names (1 row)
+    """
+    try:
+        df = pd.read_excel(xls, sheet_name=sheet)
+        df = df.map(lambda x: str(x).strip())   # convert all data into strings and strip all spaces
+        all_rows = df.to_dict(orient='records')
+        return all_rows
+    except Exception:
+        raise

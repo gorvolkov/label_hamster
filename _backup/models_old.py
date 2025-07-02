@@ -32,7 +32,7 @@ class MusicInstrument:
     def attach_barcode(self):
         ...
 
-EAC_LABEL_PATH = "../EAC/eac.png"
+EAC_LABEL_PATH = "../static/EAC.png"
 
 def _format_exp_rus(y_value: int) -> str:
     if 11 <= y_value <= 19:
@@ -86,7 +86,7 @@ class MusicInstrument1:
 
         eac_path, eac_label_path = None, None
         if data["eac"] == "ДА":
-            eac_path = f"EAC/{data["brand"].lower()}_eac.png"
+            eac_path = f"static/{data["brand"].lower()}_eac.png"
             eac_label_path = EAC_LABEL_PATH
 
         return cls(

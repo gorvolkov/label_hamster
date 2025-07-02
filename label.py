@@ -80,7 +80,6 @@ def create_label_pdf(instrument: MusicInstrument, label_num: str, output_dir: st
         y = pdf.get_y() + 6
 
     # КАРТИНКИ
-
     # Справа размещаем logo, eac, barcode вертикально друг над другом
     # x_right = page_width - right_column_width - margin_right
     # y_right = 20
@@ -107,11 +106,11 @@ def create_label_pdf(instrument: MusicInstrument, label_num: str, output_dir: st
         # Если нет логотипа, сдвигаем старт вниз, чтобы не было пустого места
         y_start -= (logo_height + image_spacing)
 
-    # EAC
+    # static
     if instrument.eac and os.path.isfile(instrument.eac):
         y_eac = y_start + logo_height + image_spacing if instrument.logo and os.path.isfile(
             instrument.logo) else y_start
-        # Рассчитываем ширину EAC с сохранением пропорций
+        # Рассчитываем ширину static с сохранением пропорций
         # Сначала получаем размеры оригинального изображения
         from PIL import Image
         img = Image.open(instrument.eac)
@@ -129,7 +128,7 @@ def create_label_pdf(instrument: MusicInstrument, label_num: str, output_dir: st
 
         pdf.image(instrument.eac, x=x_right, y=y_eac, h=image_height)
 
-        # EAC Label - размещаем справа от EAC
+        # static Label - размещаем справа от static
         if instrument.eac_label and os.path.isfile(instrument.eac_label):
             # Рассчитываем положение и размер eac_label
             x_eac_label = x_right + eac_width + 1  # 5 мм отступ от eac
@@ -157,7 +156,7 @@ def create_label_pdf(instrument: MusicInstrument, label_num: str, output_dir: st
     else:
         y_eac = y_start + logo_height + image_spacing
 
-    # Штрихкод — ставим под EAC
+    # Штрихкод — ставим под static
     if instrument.barcode and os.path.isfile(instrument.barcode):
         y_barcode = y_eac + image_height + image_spacing
         pdf.image(instrument.barcode, x=x_right, y=y_barcode, h=image_height)

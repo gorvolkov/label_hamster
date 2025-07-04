@@ -3,7 +3,7 @@ import datetime
 from typing import Optional
 
 
-def setup_project(proj_dir: str, add_name: Optional[str] = None) -> dict[str, str]:
+def create_project(proj_dir: str, add_name: Optional[str] = None) -> dict[str, str]:
     """
     Prepare folder for concrete project.
 
@@ -39,7 +39,7 @@ def setup_project(proj_dir: str, add_name: Optional[str] = None) -> dict[str, st
     return project_data
 
 
-def cleanup_folder(project_path: str) -> None:
+def remove_project(project_path: str) -> None:
     """Delete temporary files in selected folder"""
     for filename in os.listdir(project_path):
         file_path = os.path.join(project_path, filename)

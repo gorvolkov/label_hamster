@@ -18,7 +18,7 @@ def check_xls(required: set, xls: str, sheet: str):
 
 
 # парсит сырые данные из Эксель, возвращает словарь, ключами которого являются названия столбцов (1 строка)
-def parse_xls(xls: str, sheet: str) -> list[dict]:
+def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
     """
     Parses raw data from Excel
 
@@ -28,8 +28,21 @@ def parse_xls(xls: str, sheet: str) -> list[dict]:
     """
     try:
         df = pd.read_excel(xls, sheet_name=sheet)
-        df = df.map(lambda x: str(x).strip())   # convert all data into strings and strip all spaces
+        df = df.map(lambda x: str(x).strip())  # convert all data into strings and strip all spaces
         all_rows = df.to_dict(orient='records')
         return all_rows
     except Exception:
         raise
+
+
+
+
+
+if __name__ == "__main__":
+    EXCEL_FILE = "xls_files/INPUT_DATA_EXAMPLE.xlsx"
+
+    # лист Excel-файла
+    EXCEL_SHEET = "List1"
+
+    d = parse_xls(EXCEL_FILE, EXCEL_SHEET)
+    print(d)

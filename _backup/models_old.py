@@ -81,8 +81,8 @@ class MusicInstrument1:
             composed_info_text += cert_text
 
         logo_path = None
-        if data["logo"] == "ДА":
-            logo_path = f"logo/{data["brand"].lower()}.png"
+        if data["logo_simple"] == "ДА":
+            logo_path = f"logo_simple/{data["brand"].lower()}.png"
 
         eac_path, eac_label_path = None, None
         if data["eac"] == "ДА":

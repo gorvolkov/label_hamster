@@ -1,4 +1,4 @@
-from models import Product
+from models.label import Product
 
 def get_instruments_from_old_format_data(data: list[dict]) -> list[MusicInstrument]:
     """

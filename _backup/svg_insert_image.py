@@ -7,7 +7,7 @@ def _to_pdf(input: str, output: str):
 
 TEST_NUM = 11
 
-input_svg_path = "label_examples/_PROTO.svg"
+input_svg_path = "labels_crafter/_PROTO.svg"
 output_svg_path = f"label_output/test{TEST_NUM}.svg"
 barcode_path = "../barcodes/1.png"
 

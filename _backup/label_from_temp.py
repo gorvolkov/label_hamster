@@ -1,6 +1,6 @@
 
 
-from models import MusicInstrument
+from models.label import MusicInstrument
 
 import os
 import io

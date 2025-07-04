@@ -1,5 +1,5 @@
 """
-Функционал для подготовки папки logo к корректному использованию.
+Функционал для подготовки папки logo_simple к корректному использованию.
 Чтобы не перебирать руками.
 """
 
@@ -9,7 +9,7 @@ import shutil
 
 from PIL import Image
 
-LOGOS_DIR = "logo"
+LOGOS_DIR = "../logo_simple"
 
 
 def clear_dir_names(logo_dir):
@@ -73,7 +73,7 @@ def convert_jpg_to_png(root_dir):
 
 
 def unpack_and_transfer(old_dir, new_dir):
-    """Transfer all logo files to new workdir"""
+    """Transfer all logo_simple files to new workdir"""
     for root, dirs, files in os.walk(old_dir):
         for filename in files:
             old_path = os.path.join(root, filename)
@@ -94,7 +94,7 @@ import os
 
 def fit_images_in_squares(directory) -> None:
     # Создаём папку для сохранённых квадратных изображений
-    output_dir = 'logo_simple_squares'
+    output_dir = '../logo_simple_squares'
     os.makedirs(output_dir, exist_ok=True)
 
     for filename in os.listdir(directory):
@@ -186,11 +186,11 @@ if __name__ == "__main__":
     # clear_dir_names(LOGOS_DIR)
     # remove_non_png(LOGOS_DIR)
     ## здесь добавить те логотипы, на которые не было png и конвертировать в jpg
-    convert_jpg_to_png("logo_simple")
+    convert_jpg_to_png("../logo_simple")
     # convert_pngs_to_grayscale(LOGOS_DIR)
 
 
     # lower_all_names("logo_simple")
 
     # fit_images_in_squares(directory="logo_simple")
-    resize_images_to_square(input_dir="logo_simple_squares", output_dir="logo_simple_squares_unified", square_side=500)
+    resize_images_to_square(input_dir="../logo_simple_squares", output_dir="../logo_simple", square_side=500)

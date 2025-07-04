@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-input_svg_path = "label_examples/_PROTO.svg"
+input_svg_path = "labels_crafter/_PROTO.svg"
 output_svg_path = "labels/test5.svg"
 barcode_path = "../barcodes/1.png"
 

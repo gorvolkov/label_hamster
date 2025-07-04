@@ -4,9 +4,9 @@ from models import MusicInstrument
 from PIL import Image
 
 # импортируем статические файлы картинок
-from config import EAC_IMAGE, CE_IMAGE, LABELS_DIR, BARCODES_DIR
+from config import EAC_IMAGE, LABELS_DIR, BARCODES_DIR
 from models import read_from_xlsx, parse_crafter
-from barcode import generate_with_orcascan
+from generators.barcode import generate_with_orcascan
 
 def create_label_crafter(instrument: MusicInstrument, label_num: str, output_dir: str):
     # адреса к системным шрифтам
@@ -92,7 +92,6 @@ def create_label_crafter(instrument: MusicInstrument, label_num: str, output_dir
     if instrument.with_eac:
         img = Image.open(EAC_IMAGE)
         img_width, img_height = img.size
-        # aspect_ratio = img_width / img_height
         aspect_ratio = 0.3
         eac_width = eac_height * aspect_ratio
         if eac_width > right_column_width:
@@ -102,12 +101,6 @@ def create_label_crafter(instrument: MusicInstrument, label_num: str, output_dir
 
     # Штрихкод
     img = Image.open(instrument.barcode)
-    # img_width, img_height = img.size
-    # aspect_ratio = img_width / img_height
-    # barcode_width = barcode_height * aspect_ratio
-    # if barcode_width > right_column_width:
-    #     barcode_width = right_column_width
-    #     barcode_height = barcode_width / aspect_ratio
     pdf.image(instrument.barcode, x=x_right, y=y_barcode, h=barcode_height)
 
 

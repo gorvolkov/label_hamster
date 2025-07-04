@@ -1,8 +1,8 @@
 # Здесь можно будет потом доработать код для локальной генерации бар-кодов
 
 
-from barcode import EAN13
-from barcode.writer import SVGWriter
+from generators.barcode import EAN13
+from generators.barcode import SVGWriter
 
 # https://python-barcode.readthedocs.io/en/stable/getting-started.html#installation
 

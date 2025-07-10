@@ -102,7 +102,7 @@ class Product(BaseModel):
 #         "ean13": "4607100342939",  # Корректный EAN13 (без пробелов)
 #         "vendor": None,
 #         "manufacturer": "TechCorp",
-#         "logo_simple": True,
+#         "logo": True,
 #         "ce": True,
 #         "eac": False,
 #         "expiry": "12 months",

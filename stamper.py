@@ -1,22 +1,26 @@
 import os
 from fpdf import FPDF
-from PIL import Image
 
+from config import TEST_DIR
 from models import Label
 from logger import logger
 
-# System Fonts panths on Win 10
+
+# System Fonts  (Win 10)
 FONTS = {
         "arial_regular": r"C:\Windows\Fonts\arial.ttf",
-        "arial_bold": r"C:\Windows\Fonts\arialbd.ttf",
-        "arial_italic": r"C:\Windows\Fonts\ariali.ttf",
-        "arial_bold_italic":  r"C:\Windows\Fonts\arialbi.ttf",
+        "arial_bold": r"C:\Windows\Fonts\arialbd.ttf"
 }
 
-class Stamper:
-    def __init__(self, proj: dict[str, str]):
-        self.project = proj
 
+def _init_fonts(pdf: FPDF):
+    pdf.add_font("ArialTTF", "", FONTS["arial_regular"])
+    pdf.add_font("ArialTTF", "B", FONTS["arial_bold"])
+
+
+class Stamper:
+    def __init__(self, save_to: str):
+        self.output_dir = save_to
 
     def create_a4(self, label: Label):
         # create template pdf
@@ -24,134 +28,199 @@ class Stamper:
         pdf.add_page()
 
         # load fonts
-        pdf.add_font("ArialTTF", "", FONTS["arial_regular"])
-        pdf.add_font("ArialTTF", "B", FONTS["arial_bold"])
-        pdf.add_font("ArialTTF", "I", FONTS["arial_italic"])
-        pdf.add_font("ArialTTF", "BI", FONTS["arial_bold_italic"])
+        _init_fonts(pdf)
 
-        # отступы слева и справа
-        margin_left = 10
-        margin_right = 10
-
-        # ширина правого блока для графических компонентов
-        graph_block_width = 100
-
-        # ширина левого блока для текста
+        # get full page width and height
+        page_height = pdf.h
         page_width = pdf.w
-        text_block_width = page_width - margin_left - margin_right - graph_block_width
 
-        y = 20
+        # set margins
+        margin_left = 12
+        margin_right = 10
+        margin_top = 16
+        margin_bottom = 0
+        margin_text_graph = 6    # a margin between text and graph blocks
 
+        # available for printing width and height
+        available_width = page_width - margin_left - margin_right
+        available_height = page_height - margin_top - margin_bottom
+
+        # setup graph_block_width = 1/3, text_block_width = 2/3
+        graph_block_width = available_width * 0.33 - margin_text_graph / 2
+        text_block_width = available_width - graph_block_width - margin_text_graph / 2
+
+        y = margin_top
+
+        # setup paragraph shift
         paragraph = 4
-        # ТЕКСТОВЫЕ БЛОКИ
+
+        # TEXT BLOCK (LEFT)
         # model
-        size, line_height = 36, 12
+        size, line_height = 66, 20
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.model.upper())
         y = pdf.get_y() + paragraph
 
         # category
-        size, line_height = 28, 14
+        size, line_height = 44, 14
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.category)
         y = pdf.get_y() + paragraph
 
         # description
-        size, line_height = 16, 6
-
+        size, line_height = 24, 10
         pdf.set_font("ArialTTF", "", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.description)
-        y = pdf.get_y() + paragraph
+        y = pdf.get_y() + 2 * paragraph
 
-        # info
+        # for all other text
         size, line_height = 14, 6
         pdf.set_font("ArialTTF", "", size)
+
+        # expiry and country
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, label.info_block)
+        pdf.multi_cell(text_block_width, line_height, label.info_block, markdown=True)
         y = pdf.get_y() + paragraph
 
-        # addresses
-        size, line_height = 14, 6
-        pdf.set_font("ArialTTF", "", size)
+        # certification
+        if label.certification:
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, label.certification, markdown=True)
+            y = pdf.get_y() + paragraph
+        else:
+            y = pdf.get_y() + 6 * paragraph      # если сертификации нет, пропускаем 6 строк
+
+        # importer / vendor
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, label.addresses_block)
-        # y = pdf.get_y() + paragraph
+        pdf.multi_cell(text_block_width, line_height, f"**Импортёр / продавец:** {label.importer_vendor}", markdown=True)
+        y = pdf.get_y() + paragraph
 
-        # ГРАФИЧЕСКИЙ БЛОК
-        page_height = pdf.h
-        # отступы по верху и низу
-        margin_top = 10
-        margin_bottom = 10
-        # Высота доступная для правого блока
-        available_height = page_height - margin_top - margin_bottom
+        # vendor
+        if label.vendor:
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, f"**Продавец:** {label.vendor}", markdown=True)
+            y = pdf.get_y() + paragraph
+        else:
+            y = pdf.get_y() + 3 * paragraph
 
-        # Делим на три части для трёх подблоков
-        block_height = available_height / 3
+        # manufacturer
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, f"**Производитель:** {label.manufacturer}", markdown=True)
 
-        x_right = page_width - graph_block_width - margin_right
+        # GRAPHS BLOCK (RIGHT)
+        x_graphs = margin_left + text_block_width + margin_text_graph
 
-        # 1. Логотип (если есть)
+        # margin floors
+        floor_margin = 2
+
+        # calculate width for every graphics "floor"
+        floor_height = available_height / 3 - 2 * floor_margin
+
+        # 1. Logo floor (upper)
         if label.logo is not None:
-            size = graph_block_width * 0.7
+            size = floor_height
+            x_centered = x_graphs + (graph_block_width - size) / 2   # center logo
+            pdf.image(label.logo, x=x_centered, y=margin_top, h=size)
 
-            # Масштабируем логотип по ширине graph_block_width и по высоте block_height
-            x_centered = x_right + (graph_block_width - size) / 2
-            pdf.image(label.logo, x=x_centered, y=margin_top, w=size, h=size)
-
-        # 2. Средняя строка (qr слева, eac/ce справа)
-        middle_block_y = margin_top + block_height
-        qr_size = block_height * 0.8 # квадратный блок по высоте
+        # 2. Middle block (qr слева, eac/ce справа)
+        middle_block_y = margin_top + floor_height + floor_margin
+        margin_sub = 2   # margin between QR block and CE/EAC block
+        subblock_width = (graph_block_width - margin_sub) / 2
 
         if label.qr is not None:
-            pdf.image(label.qr, x=x_right, y=middle_block_y, w=qr_size, h=qr_size)
+            qr_size = floor_height if floor_height < subblock_width else subblock_width
+            trim_coef = 0.9  # looks better
+            qr_size *= trim_coef
+            y_centered = middle_block_y + (floor_height - qr_size) / 2
+            pdf.image(label.qr, x=x_graphs, y=y_centered, h=qr_size)
 
-        right_subblock_x = x_right + qr_size + 5
-        right_subblock_width = graph_block_width - qr_size - 5
-
-        # Высота для eac и ce делим пополам с отступом
-        half_height = (block_height - 5) / 2
+        right_subblock_x = x_graphs + subblock_width + margin_sub
+        margin_ce_eac = 6  # margin between CE block and EAC block
+        half_floor_height = (floor_height / 2 - margin_ce_eac)
+        right_subblock_width = graph_block_width / 2 - margin_ce_eac
 
         if label.eac is not None:
-            # для отладки, убрать потом
-            coef = 0.8
-            pdf.image(label.eac, x=right_subblock_x, y=middle_block_y, w=right_subblock_width * coef, h=half_height * coef)
+            coef = 1.152
+            eac_height = half_floor_height
+            eac_width = eac_height * coef
+
+            # если рассчитанная ширина EAC больше ширины, выделенной под суб-блок, то пересчитываем:
+            if eac_width > right_subblock_width:
+                eac_width = right_subblock_width
+                eac_height = eac_width / coef
+
+            pdf.image(label.eac, x=right_subblock_x, y=middle_block_y, w=eac_width, h=eac_height)
 
         if label.ce is not None:
-            coef = 0.8
-            pdf.image(label.ce, x=right_subblock_x, y=middle_block_y + half_height + 5, w=right_subblock_width * coef,
-                      h=half_height * coef)
+            coef = 1.028
+            ce_height = half_floor_height
+            ce_width = ce_height * coef
 
-        # 3. Штрихкод (если есть)
-        barcode_y = margin_top + 2 * block_height
+            # если рассчитанная ширина CE больше ширины, выделенной под суб-блок, то пересчитываем:
+            if ce_width > right_subblock_width:
+                ce_width = right_subblock_width
+                ce_height = ce_width / coef
+
+            pdf.image(label.ce, x=right_subblock_x, y=middle_block_y + half_floor_height + margin_ce_eac, w=ce_width, h=ce_height)
+
+        # 3. Barcode floor (low)
+        barcode_y = margin_top + 2 * floor_height + 2 * floor_margin
         if label.barcode is not None:
-            pdf.image(label.barcode, x=x_right, y=barcode_y, w=graph_block_width, h=block_height)
+            barcode_height = floor_height
+            coef = 1.417     # =  width / height
+            barcode_width = floor_height * coef
+            if barcode_width > graph_block_width:
+                barcode_width = graph_block_width
+                barcode_height = floor_height / coef
+            x_centered = x_graphs + (graph_block_width - barcode_width) / 2
+            pdf.image(label.barcode, x=x_centered, y=barcode_y, w=barcode_width, h=barcode_height)
 
-
-        # Сохраняем PDF
+        # SAVE LABEL
         filename = f"{label.num}_{label.model}.pdf"
-        output_path = os.path.join(self.project["labels"], filename)
+        output_path = os.path.join(self.output_dir, filename)
         pdf.output(output_path)
-        logger.debug(f"PDF saved: {output_path}")
+        logger.info(f"PDF saved: {output_path}")
+
+    # здесь можно добавить другие форматы этикеток
+    def create_a5(self):
+        pass
 
 
-# отладка
+# код для тестирования работы с пдф
 if __name__ == "__main__":
     from models import Label, Product
 
     test_num = input("test num = ")
+    # test_num = "1"
     project = {
         "project_name": "test",
-        "project_folder": "projects/test",
-        "graphs": "projects/test/graphs",
-        "labels": "projects/test/labels"
+        "project_folder": "temp/test",
+        "graphs": "temp/test/graphs",
+        "labels": "temp/test/labels"
     }
 
-    test_data = {'brand': 'golden cup', 'model': f'TEST{test_num} TDX-N1', 'category': 'Электронная ударная\nустановка', 'description': '7 пэдов (малый, три тома, краш, райд, хай-хэт), бас-бочка облегченная', 'expiry': '3', 'country': 'Китай', 'certification': 'Соответствует требованиям ТР ТС 004/2011 "О безопасности\nнизковольтного оборудования", ТР ТС 020/2011 "Электромагнитная\nсовместимость технических средств", ТР ЕАЭС 037/2016\n"Об ограничении применения опасных веществ в изделиях\nэлектротехники и радиоэлектроники', 'importer_vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва,\nДмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.', 'vendor': 'nan', 'manufacturer': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village,\nDanshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536', 'eac': 'nan', 'ce': 'nan', 'logo': '1', 'instruction': 'nan'}
+    test_data = {'brand': 'stands&cables',
+                 'model': f'Модель {test_num}',
+                 'category': 'Электронная ударная установка',
+                 'description': 'Описание; не слишком длинное и не слишком короткое, не оч',
+                 'expiry': '3',
+                 'country': 'Китай',
+                'certification': 'nan',
+                 # 'certification': 'Соответствует требованиям ТР ТС 004/2011 "О безопасности низковольтного оборудования", ТР ТС 020/2011 "Электромагнитная совместимость технических средств", ТР ЕАЭС 037/2016 "Об ограничении применения опасных веществ в изделиях электротехники и радиоэлектроники',
+                 'importer_vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва, Дмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.',
+                  'vendor': 'nan',
+
+                  # 'vendor': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
+                 'manufacturer': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
+                 'eac': '1',
+                 'ce': '1',
+                 'logo': '1',
+                 'instruction': 'https://errors.pydantic.dev/2.11/v/value_error'}
     product = Product.from_dict(test_data)
-    label = Label(prod=product, proj=project, num="001")
+    label = Label(prod=product, num="001")
     label.prepare_all()
-    stamper = Stamper(proj=project)
+    stamper = Stamper(save_to=TEST_DIR)
     stamper.create_a4(label)

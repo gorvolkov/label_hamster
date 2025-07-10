@@ -1,12 +1,18 @@
 import requests
 
-# получает ШК, используя API orcascan
-def gen_barcode_orcascan(ean: str, barcode_path: str) -> None:
-    """Генерирует штрих-код, используя переданный EAN, и сохраняет в папку BARCODES_DIR"""
+def gen_barcode_orcascan(ean: str, save_to: str) -> None:
+    """
+    Generate and save barcode image (PNG), using orcascan API
+
+    :param ean: EAN13 string
+    :param save_to: path to saved image
+    :return: None
+    """
+
     host = "https://barcode.orcascan.com"
     response = requests.get(url=f"{host}/?type=ean13&data={ean}&format=png")
     if response.status_code == 200:
-        with open(barcode_path, 'wb') as file:
+        with open(save_to, 'wb') as file:
             file.write(response.content)
     else:
         raise Exception("Something went wrong")

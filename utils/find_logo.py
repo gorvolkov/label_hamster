@@ -1,11 +1,8 @@
 import os
 
-from config import LOGO_DIR
-
-
 def find_logo(brand: str, search_in: str, ) -> str:
     """Find logo image by passed brand name"""
-    brand_lower = brand.lower()
+    brand_lower = brand.lower().strip()
     for filename in os.listdir(search_in):
         if filename.lower().startswith(brand_lower):
             return os.path.join(search_in, filename)

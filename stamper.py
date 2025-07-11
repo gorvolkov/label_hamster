@@ -56,21 +56,21 @@ class Stamper:
 
         # TEXT BLOCK (LEFT)
         # model
-        size, line_height = 66, 20
+        size, line_height = 40, 16
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.model.upper())
         y = pdf.get_y() + paragraph
 
         # category
-        size, line_height = 44, 14
+        size, line_height = 36, 14
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.category)
         y = pdf.get_y() + paragraph
 
         # description
-        size, line_height = 24, 10
+        size, line_height = 16, 6
         pdf.set_font("ArialTTF", "", size)
         pdf.set_xy(margin_left, y)
         pdf.multi_cell(text_block_width, line_height, label.description)
@@ -205,7 +205,8 @@ if __name__ == "__main__":
     test_data = {'brand': 'stands&cables',
                  'model': f'Модель {test_num}',
                  'category': 'Электронная ударная установка',
-                 'description': 'Описание; не слишком длинное и не слишком короткое, не оч',
+                 'description': 'Цвет: черный\nВ комплекте: адаптер питания, микрофон\nТехнические характеристики: 61 миниклавиша, 16 тембров, 10 ритмов\n'
+                                'Питание: 220В-240В, адаптер питания (в комплекте)',
                  'expiry': '3',
                  'country': 'Китай',
                 'certification': 'nan',

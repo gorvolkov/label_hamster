@@ -6,6 +6,7 @@ from config import REQUIRED_DATA_FIELDS, TEMP_DIR, TEST_DIR
 from logger import logger
 from models import Product, Label
 from stamper import Stamper
+from utils import cleanup_temp
 from xls_parser import check_xls, parse_xls
 
 
@@ -87,17 +88,6 @@ def main_script(xls_file: str, xls_sheet: str) -> None:
             logger.error(f"Failed stamping label {label.num}: {e}")
 
 
-def _cleanup_temp(temp_dir: str) -> None:
-    """Delete all generated files in temp folder"""
-    for filename in os.listdir(temp_dir):
-        file_path = os.path.join(temp_dir, filename)
-        try:
-            os.remove(file_path)
-            logger.debug(f"Removed {file_path}")
-        except Exception as e:
-            logger.error(f"Failed removing temporary file {file_path}: {e}")
-
-
 
 if __name__ == "__main__":
     print("Hi! I'm Label Hamster. I eat excel sheets and poop with labels.")
@@ -114,6 +104,6 @@ if __name__ == "__main__":
     main_script(xls_file=xls_file, xls_sheet=xls_sheet)
     print("All labels were stamped, yo-hoo!")
 
-    _cleanup_temp(temp_dir=TEMP_DIR)
+    cleanup_temp(dir=TEMP_DIR)
     print("...and I always flush the toilet after myself.")
 

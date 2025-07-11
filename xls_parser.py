@@ -39,10 +39,15 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
 
 
 if __name__ == "__main__":
-    EXCEL_FILE = "xls_files/INPUT_DATA_EXAMPLE.xlsx"
+    EXCEL_FILE = "E:\PYCHARM PROJECTS\label_hamster\_tests\INPUT_DATA_TEST.xlsx"
 
     # лист Excel-файла
     EXCEL_SHEET = "List1"
 
-    d = parse_xls(EXCEL_FILE, EXCEL_SHEET)
-    print(d)
+    goods = parse_xls(EXCEL_FILE, EXCEL_SHEET)
+    for g in goods:
+        print(g)
+        print()
+        for k, v in g.items():
+            print(f"{k}: {v}")
+        print()

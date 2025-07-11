@@ -1,4 +1,4 @@
 from .find_logo import find_logo
-from .project_utils import create_project, remove_project
+from .project_utils import  cleanup_temp, cleanup_temp_recursive
 
-__all__ = ["find_logo", "create_project", "remove_project"]
+__all__ = ["find_logo", "cleanup_temp", "cleanup_temp_recursive"]

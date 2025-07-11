@@ -2,18 +2,19 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# папка всех проектов
+# папка для времменных графических файлов
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 
-# папка, куда загружается Excel-таблица для обработки
-XLS_DIR  = os.path.join(BASE_DIR, "xls_files")
+# папка, куда распаковываем архив с логотипами с Яндекс Диска
+LOGO_DOWNLOAD = os.path.join(BASE_DIR, "_logo_download")
 
 # папка с логотипами (потом можно будет положить в Static)
 LOGO_DIR = os.path.join(BASE_DIR, "logo")
 
-STATIC_FILES_FOLDER = os.path.join(BASE_DIR, "static")
-
+# папка для тестирования
 TEST_DIR = os.path.join(BASE_DIR, "_tests")
+
+STATIC_FILES_FOLDER = os.path.join(BASE_DIR, "static")
 
 # файл изображения маркировки CE
 CE_IMAGE = os.path.join(STATIC_FILES_FOLDER, "CE.png")

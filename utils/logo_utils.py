@@ -1,79 +1,24 @@
 """
-Функционал для подготовки папки logo к корректному использованию.
-Чтобы не перебирать руками.
+Это небольшой пакет функций для работы с файлами логотипов.
+Ничто из этого не используется в основном функционале скрипта.
+Однако модуль может быть полезен для подготовки к работе папки с логотипами.
+
+ВАЖНО! Перед использованием нужно убедиться, что логотип каждого бренда имеет вариант в .png-формате.
+Если такого нет, нужно запросить у дизайнера.
+Или можно конвертировать имеющийся .jpg/.jpeg-вариант в .png с помощью функции _convert_jpg_to_png (она в самом низу).
+
+В блоке main реализован скрипт подготовки к работе
 """
 
-from logger import logger
 import os
 import shutil
-
 from PIL import Image
 
-LOGOS_DIR = "../logo"
+from config import LOGO_DIR, LOGO_DOWNLOAD
 
 
-def clear_dir_names(logo_dir):
-    """Clear folder names"""
-    brands = os.listdir(logo_dir)
-    for b in brands:
-        old_path = os.path.join(logo_dir, b)
-        new_name = b.split(" - лого")[0]  # оставляем в новом имени папки всё, что было до " - лого", напр. "Vic Firth - лого" -> "Vic Firth"
-        new_path = os.path.join(LOGOS_DIR, new_name)
-        os.rename(old_path, new_path)
-
-
-def remove_non_png(logo_dir):
-    """Remove from brand folders all files exclude .png"""
-    for dirpath, dirnames, filenames in os.walk(logo_dir):
-        for filename in filenames:
-            if not filename.lower().endswith('.png'):
-                file_path = os.path.join(dirpath, filename)
-                try:
-                    os.remove(file_path)
-                    print(f'Removed: {file_path}')
-                except Exception as e:
-                    print(f'Error while removing file {file_path}: {e}')
-
-
-def convert_pngs_to_grayscale(root_dir):
-    """Convert all color PNG to grayscale files"""
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        for filename in filenames:
-            if filename.lower().endswith('.png'):
-                file_path = os.path.join(dirpath, filename)
-                img = Image.open(file_path)
-                if img.mode in ('RGBA', 'LA'):
-                    # Создаём белый фон
-                    background = Image.new('RGB', img.size, (255, 255, 255))
-                    background.paste(img, mask=img.split()[-1])  # Альфа-канал как маска
-                    img = background
-                else:
-                    img = img.convert('RGB')
-                img_gray = img.convert('L')
-                img_gray.save(file_path)
-                print(f'Converted: {file_path}')
-
-
-# конвертировать в jpg те файлы, на которые не нашлось png
-def convert_jpg_to_png(root_dir):
-    """Convert JPG/JPEG to PNG files"""
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        for filename in filenames:
-            if filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
-                jpg_path = os.path.join(dirpath, filename)
-                png_path = os.path.splitext(jpg_path)[0] + '.png'
-                try:
-                    with Image.open(jpg_path) as img:
-                        img.save(png_path, 'PNG')
-                    os.remove(jpg_path)  # Удаляем исходный JPG
-                    print(f'Converted and removed: {jpg_path} -> {png_path}')
-                except Exception as e:
-                    print(f'An error with file {jpg_path}: {e}')
-
-
-
-def unpack_and_transfer(old_dir, new_dir):
-    """Transfer all logo files to new workdir"""
+def _put_all_in_one(old_dir: str, new_dir: str) -> None:
+    """Переносит все графические файлы из распакованного архива с логотипами с Яндекс Диска в одну папку"""
     for root, dirs, files in os.walk(old_dir):
         for filename in files:
             old_path = os.path.join(root, filename)
@@ -81,116 +26,125 @@ def unpack_and_transfer(old_dir, new_dir):
             shutil.copy(old_path, new_path)
 
 
-def lower_all_names(logo_dir: str):
-    for file in os.listdir(logo_dir):
-        old_filepath = os.path.join(logo_dir, file)
-        new_filepath = os.path.join(logo_dir, file.lower())
+def _lower_all_names(dir: str) -> None:
+    """Приводит имена всех файлов в заданной директории к нижнему регистру"""
+    for file in os.listdir(dir):
+        old_filepath = os.path.join(dir, file)
+        new_filepath = os.path.join(dir, file.lower())
         os.rename(old_filepath, new_filepath)
 
 
+def _remove_non_png(dir: str) -> None:
+    """Удаляет вcе файлы, кроме .png"""
+    for filename in os.listdir(dir):
+        if not filename.lower().endswith('.png'):
+            filepath = os.path.join(dir, filename)
+            try:
+                os.remove(filepath)
+                print(f'Removed: {filepath}')
+            except Exception as e:
+                print(f'Error while removing file {filepath}: {e}')
 
-from PIL import Image
-import os
 
-def fit_images_in_squares(directory) -> None:
-    # Создаём папку для сохранённых квадратных изображений
-    output_dir = '../logo_simple_squares'
-    os.makedirs(output_dir, exist_ok=True)
+def _square(dir: str, square_size: int = None) -> None:
+    """
+    Дополняет все изображения в заданной папке до квадратов и унифицирует по размеру
 
-    for filename in os.listdir(directory):
-        if filename.lower().endswith('.png'):
-            filepath = os.path.join(directory, filename)
-            with Image.open(filepath) as img:
+    :param dir: путь до папки с изображениями (обрабатывает только .png, остальные будут пропущены)
+    :param square_size: размер стороны квадрата в пикселях (если не установлен, то будет отформатировано по большей стороне прямоугольного исходника)
+
+    """
+
+    for filename in os.listdir(dir):
+        filepath = os.path.join(dir, filename)
+
+        with Image.open(filepath) as img:
+            width, height = img.size
+
+            # Определяем размер квадрата
+            if square_size is None:
+                size = max(width, height)
+            else:
+                size = square_size
+
+            # Масштабируем изображение, если задан размер квадрата и он отличается от максимального размера
+            if square_size is not None and (width != size or height != size):
+                # Сохраняем пропорции, вписывая изображение в квадрат нужного размера
+                img.thumbnail((size, size), Image.Resampling.LANCZOS)
                 width, height = img.size
-                max_side = max(width, height)
 
-                # Создаём новое квадратное изображение с прозрачным фоном
-                new_img = Image.new('RGBA', (max_side, max_side), (255, 255, 255, 0))
+            # Создаём новое квадратное изображение с прозрачным фоном
+            new_img = Image.new('RGBA', (size, size), (255, 255, 255, 0))
 
-                # Центрируем исходное изображение в новом квадрате
-                x_offset = (max_side - width) // 2
-                y_offset = (max_side - height) // 2
-                new_img.paste(img, (x_offset, y_offset))
+            # Центрируем изображение в квадрате
+            x_offset = (size - width) // 2
+            y_offset = (size - height) // 2
+            new_img.paste(img, (x_offset, y_offset))
 
-                # Сохраняем результат в папку output
-                new_img.save(os.path.join(output_dir, filename))
-
-    logger.info(f'Обработано изображений: {len(os.listdir(output_dir))}')
+            # Сохраняем результат, заменяя исходный файл
+            new_img.save(filepath)
 
 
-def resize_images_to_square(input_dir, output_dir, square_side):
-    os.makedirs(output_dir, exist_ok=True)
+def _grayscale(dir: str):
+    """Переводит все изображения в переданной директории в оттенки серого"""
 
-    for filename in os.listdir(input_dir):
-        if filename.lower().endswith('.png'):
-            filepath = os.path.join(input_dir, filename)
-            with Image.open(filepath) as img:
-                resized_img = img.resize((square_side, square_side), Image.Resampling.LANCZOS)
-                resized_img.save(os.path.join(output_dir, filename))
+    for filename in os.listdir(dir):
+        filepath = os.path.join(dir, filename)
 
-    logger.info(f'Обработано изображений: {len(os.listdir(output_dir))}')
+        img = Image.open(filepath)
+        if img.mode in ('RGBA', 'LA'):
+            # Создаём белый фон
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1])  # Альфа-канал как маска
+            img = background
+        else:
+            img = img.convert('RGB')
+        img_gray = img.convert('L')
+        img_gray.save(filepath)
 
 
-# для использования с вложенными папками
-def fit_images_in_squares_recursive(input_dir: str, output_dir: str = 'logo_simple_squares') -> None:
-    os.makedirs(output_dir, exist_ok=True)
-    count = 0
+def _convert_jpg_to_png(file: str):
+    """
+    Конвертирует переданный .jpg/.jpeg в .png
 
-    for root, dirs, files in os.walk(input_dir):
-        for filename in files:
-            if filename.lower().endswith('.png'):
-                filepath = os.path.join(root, filename)
-                with Image.open(filepath) as img:
-                    width, height = img.size
-                    max_side = max(width, height)
+    :param file: абсолютный путь к файлу, который нужно конвертировать
+    """
 
-                    new_img = Image.new('RGBA', (max_side, max_side), (255, 255, 255, 0))
-
-                    x_offset = (max_side - width) // 2
-                    y_offset = (max_side - height) // 2
-                    new_img.paste(img, (x_offset, y_offset))
-
-                    # Сохраняем все файлы в одну выходную папку, чтобы избежать дублирования имён,
-                    # можно добавить префикс с относительным путём или просто имя файла
-                    # Для простоты сохраняем по имени файла:
-                    new_img.save(os.path.join(output_dir, filename))
-                    count += 1
-
-    logger.info(f'Обработано изображений: {count}')
-
-# для использования с вложенными папками
-def resize_images_to_square_recursive(input_dir: str, output_dir: str, square_side: int) -> None:
-    os.makedirs(output_dir, exist_ok=True)
-    count = 0
-
-    for root, dirs, files in os.walk(input_dir):
-        for filename in files:
-            if filename.lower().endswith('.png'):
-                filepath = os.path.join(root, filename)
-                with Image.open(filepath) as img:
-                    resized_img = img.resize((square_side, square_side), Image.Resampling.LANCZOS)
-
-                    # Чтобы сохранить структуру папок в output_dir, формируем относительный путь
-                    rel_path = os.path.relpath(root, input_dir)
-                    output_subdir = os.path.join(output_dir, rel_path)
-                    os.makedirs(output_subdir, exist_ok=True)
-
-                    resized_img.save(os.path.join(output_subdir, filename))
-                    count += 1
-
-    logger.info(f'Обработано изображений: {count}')
-
+    png_path = os.path.splitext(file)[0] + '.png'
+    try:
+        with Image.open(file) as img:
+            img.save(png_path, 'PNG')
+        os.remove(file)  # Удаляем исходный JPG
+        print(f'Converted and removed: {file} -> {png_path}')
+    except Exception as e:
+        print(f'An error with file {file}: {e}')
 
 
 if __name__ == "__main__":
-    # clear_dir_names(LOGOS_DIR)
-    # remove_non_png(LOGOS_DIR)
-    ## здесь добавить те логотипы, на которые не было png и конвертировать в jpg
-    convert_jpg_to_png("../logo")
-    # convert_pngs_to_grayscale(LOGOS_DIR)
+    # Перед запуском необходимо скачать все логотипы с Яндекс Диска и положить их в папку _logo_download
 
+    raw_logo_dir, logo_dir = LOGO_DOWNLOAD, LOGO_DIR
 
-    # lower_all_names("logo")
+    # 1. вынимаем все графические файлы и складываем их в рабочую папку
+    _put_all_in_one(old_dir=raw_logo_dir, new_dir=logo_dir)
 
-    # fit_images_in_squares(directory="logo")
-    resize_images_to_square(input_dir="../logo_simple_squares", output_dir="../logo", square_side=500)
+    # 2. приводим все наименования к нижнему регистру
+    _lower_all_names(dir=logo_dir)
+
+    # 3. удаляем всё, кроме .png
+    _remove_non_png(dir=logo_dir)
+
+    # 4. приводим все логотипы к квадратному формату со стороной 500 px
+    _square(dir=logo_dir, square_size=500)
+
+    # 5. переводим всё в оттенки серого
+    _grayscale(dir=logo_dir)
+
+    # Далее, к сожалению, всё равно надо пройтись руками по вариантам и оставить только необходимое.
+    # Потому что в исходниках будут дубли и разные варианты логотипов для одного и того же бренда.
+    # Кроме того, часть названий на китайском, их надо переименовать человеческой латиницей.
+
+    # # 6. удаляем исходники. НО ПЕРЕД ЭТИМ ЛУЧШЕ ПРОВЕРИТЬ, ЧТО ВСЕ БРЕНДЫ ПОЛУЧИЛИ СВОИ ЛОГОТИПЫ.
+    # from utils import cleanup_temp_recursive
+    # cleanup_temp_recursive(dir=raw_logo_dir)
+

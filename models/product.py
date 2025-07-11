@@ -44,10 +44,10 @@ class Product(BaseModel):
         for k, v in data.items():
             if k in fields_bool:
                 # Для булевых полей: если значение не в true_values, ставим False
-                data_clean[k] = v in true_values
+                data_clean[k] = v.lower() in true_values
 
             # Для остальных полей: если приходит 'nan' или аналоги, конвертируем в None (если это было обязательное поле, будет выброшена ошибка валидации)
-            elif v in none_values:
+            elif v.lower() in none_values:
                 data_clean[k] = None
 
         return data_clean
@@ -92,28 +92,28 @@ class Product(BaseModel):
 
 
 # test
-# if __name__ == "__main__":
-#     product_data_1 = {
-#         "brand": "AwesomeBrand",
-#         "model": "SuperModel",
-#         "category": "Electronics",
-#         "description": "A very useful electronic device.",
-#         "importer_vendor": "GlobalImportCo",
-#         "ean13": "4607100342939",  # Корректный EAN13 (без пробелов)
-#         "vendor": None,
-#         "manufacturer": "TechCorp",
-#         "logo": True,
-#         "ce": True,
-#         "eac": False,
-#         "expiry": "12 months",
-#         "country": "China",
-#         "certification": "ISO 9001",
-#         "instruction": "http://example.com/instruction.pdf",
-#     }
-#
-#     try:
-#         product1 = Product.from_dict(product_data_1)
-#         print(product1)
-#     except ValidationError as e:
-#         print("Ошибка валидации:")
-#         print(e)
+if __name__ == "__main__":
+    product_data_1 = {
+        "brand": "AwesomeBrand",
+        "model": "SuperModel",
+        "category": "Electronics",
+        "description": "A very useful electronic device.",
+        "importer_vendor": "GlobalImportCo",
+        "ean13": "4607100342939",  # Корректный EAN13 (без пробелов)
+        "vendor": "nan",
+        "manufacturer": "TechCorp",
+        "logo": "ДА",
+        "ce": "nan",
+        "eac": "nan",
+        "expiry": "12 months",
+        "country": "China",
+        "certification": "ISO 9001",
+        "instruction": "http://example.com/instruction.pdf",
+    }
+    product_data_2 = {'brand': 'davinci', 'model': 'DAVINCI DCK-142 BK', 'category': 'Синтезатор', 'description': 'Цвет: черный\nВ комплекте: адаптер питания, микрофон\nТехнические характеристики: 61 миниклавиша, 16 тембров, 10 ритмов\nПитание: 220В-240В, адаптер питания (в комплекте) / \nБатарейки: AAx4 шт. (в комплект не входят)', 'expiry': '3', 'country': 'Китай', 'certification': 'Соответствует требованиям ТР ТС 004/2011 "О безопасности\nнизковольтного оборудования", ТР ТС 020/2011 "Электромагнитная\nсовместимость технических средств", ТР ЕАЭС 037/2016\n"Об ограничении применения опасных веществ в изделиях\nэлектротехники и радиоэлектроники', 'importer_vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва,\nДмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.', 'vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва,\nДмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.', 'manufacturer': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village,\nDanshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '3831120929622', 'eac': 'nan', 'ce': 'nan', 'logo': 'nan', 'instruction': 'https://example.com'}
+    try:
+        product = Product.from_dict(product_data_2)
+        print(product)
+    except ValidationError as e:
+        print("Ошибка валидации:")
+        print(e)

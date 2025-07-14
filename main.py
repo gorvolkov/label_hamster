@@ -90,10 +90,10 @@ def main_script(xls_file: str, xls_sheet: str) -> None:
 
 
 if __name__ == "__main__":
-    print("Hi! I'm Label Hamster. I eat excel sheets and poop with labels.")
+    print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
 
     # для тестирования
-    TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_TEST.xlsx")
+    TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
     print("TEST_FILE = ", TEST_FILE_PATH)
     print("TEST_SHEET = List1")
 
@@ -105,5 +105,5 @@ if __name__ == "__main__":
     print("All labels were stamped, yo-hoo!")
 
     cleanup_temp(dir=TEMP_DIR)
-    print("...and I always flush the toilet after myself.")
+    print("...and I always clean it up after myself.")
 

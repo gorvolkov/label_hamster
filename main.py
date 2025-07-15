@@ -96,9 +96,9 @@ if __name__ == "__main__":
     print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
 
     # для тестирования
-    TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
-    print("TEST_FILE = ", TEST_FILE_PATH)
-    print("TEST_SHEET = List1")
+    # TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
+    # print("TEST_FILE = ", TEST_FILE_PATH)
+    # print("TEST_SHEET = List1")
 
     # Excel-файл
     xls_file = input("Select Excel file (full path without quotes): ")

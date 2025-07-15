@@ -6,7 +6,7 @@ from config import REQUIRED_DATA_FIELDS, TEMP_DIR, TEST_DIR
 from logger import logger
 from models import Product, Label
 from stamper import Stamper
-from utils import cleanup_temp
+from utils import setup_workdir, cleanup_temp
 from xls_parser import check_xls, parse_xls
 
 
@@ -90,6 +90,9 @@ def main_script(xls_file: str, xls_sheet: str) -> None:
 
 
 if __name__ == "__main__":
+    # создание директории для временных файлов
+    setup_workdir(temp_dir=TEMP_DIR)
+
     print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
 
     # для тестирования
@@ -97,13 +100,17 @@ if __name__ == "__main__":
     print("TEST_FILE = ", TEST_FILE_PATH)
     print("TEST_SHEET = List1")
 
+    # Excel-файл
     xls_file = input("Select Excel file (full path without quotes): ")
 
+    # лист таблицы
     xls_sheet = input("Select sheet: ")
 
+    # основной скрипт
     main_script(xls_file=xls_file, xls_sheet=xls_sheet)
     print("All labels were stamped, yo-hoo!")
 
+    # удаление временных файлов
     cleanup_temp(dir=TEMP_DIR)
     print("...and I always clean it up after myself.")
 

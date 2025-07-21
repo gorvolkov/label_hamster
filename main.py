@@ -83,7 +83,7 @@ def main_script(xls_file: str, xls_sheet: str) -> None:
 
     for label in labels:
         try:
-            stamper.create_a4(label)
+            stamper.create_7x5(label)
         except Exception as e:
             logger.error(f"Failed stamping label {label.num}: {e}")
 
@@ -96,9 +96,9 @@ if __name__ == "__main__":
     print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
 
     # для тестирования
-    # TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
-    # print("TEST_FILE = ", TEST_FILE_PATH)
-    # print("TEST_SHEET = List1")
+    TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
+    print("TEST_FILE = ", TEST_FILE_PATH)
+    print("TEST_SHEET = List1")
 
     # Excel-файл
     xls_file = input("Select Excel file (full path without quotes): ")
@@ -113,4 +113,3 @@ if __name__ == "__main__":
     # удаление временных файлов
     cleanup_temp(dir=TEMP_DIR)
     print("...and I always clean it up after myself.")
-

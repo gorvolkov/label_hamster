@@ -2,7 +2,7 @@ import os
 from fpdf import FPDF
 
 from config import TEST_DIR
-from models import Label
+from models import Label, ProductRaw
 from logger import logger
 
 
@@ -341,7 +341,173 @@ class Stamper:
         pdf.output(output_path)
         logger.info(f"PDF saved: {output_path}")
 
+    def create_7x5_from_prod(self, product: ProductRaw):
+        # Размер страницы 7 см по ширине и 5 см по высоте (альбомная ориентация)
+        page_width, page_height = 70, 50  # мм
 
+        # Исходный размер A4 ландшафт (ширина x высота) для масштабирования
+        a4_width, a4_height = 297, 210  # мм
+
+        scale_x = page_width / a4_width
+        scale_y = page_height / a4_height
+        scale = min(scale_x, scale_y)  # пропорциональное масштабирование
+
+        pdf = FPDF(unit='mm', format=(page_width, page_height))
+        pdf.add_page()
+
+        _init_fonts(pdf)  # инициализация шрифтов
+
+        scale = 0.185
+
+        margin_left = 12 * scale
+        margin_right = 10 * scale
+        margin_top = 16 * scale
+        margin_bottom = 0  # можно скорректировать при необходимости
+        margin_text_graph = 6 * scale
+
+        available_width = page_width - margin_left - margin_right
+        available_height = page_height - margin_top - margin_bottom
+        graph_block_width = available_width * 0.33 - margin_text_graph / 2
+        text_block_width = available_width - graph_block_width - margin_text_graph / 2
+
+        y = margin_top
+        paragraph = 4 * scale
+
+        # --- ТЕКСТОВЫЙ БЛОК ---
+
+        # model
+        size = 8
+        line_height = 3
+        pdf.set_font("ArialTTF", "B", size)
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, product.model.upper())
+        y = pdf.get_y() + paragraph
+
+        # category
+        size = 7
+        line_height = 3
+        pdf.set_font("ArialTTF", "B", size)
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, product.category)
+        y = pdf.get_y() + paragraph
+
+        # description
+        size = 3
+        line_height = 1.5
+        pdf.set_font("ArialTTF", "", size)
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, product.description)
+        y = pdf.get_y() + 2 * paragraph
+
+        size = 3
+        line_height = 1.5
+        pdf.set_font("ArialTTF", "", size)
+
+        info = []
+        # info block
+        if product.expiry:
+            exp_text = f"**Срок службы**: {product.expiry}."  # add expiry info in correct format
+            info.append(exp_text)
+
+        if product.country:
+            country_text = f"**Страна изготовления**: {product.country}"  # added markdown
+            info.append(country_text)
+
+        info_text = " ".join(info)
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, info_text, markdown=True)
+        y = pdf.get_y() + paragraph
+
+        # certification
+        if product.certification:
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, product.certification, markdown=True)
+            y = pdf.get_y() + paragraph
+        else:
+            y = pdf.get_y() + 3 * paragraph
+
+        # importer/vendor
+        pdf.set_xy(margin_left, y)
+        pdf.multi_cell(text_block_width, line_height, f"**Импортёр / продавец:** {product.importer_vendor}",
+                       markdown=True)
+        y = pdf.get_y() + paragraph
+
+        # vendor
+        if product.vendor:
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, f"**Продавец:** {product.vendor}", markdown=True)
+            y = pdf.get_y() + paragraph
+        else:
+            y = pdf.get_y() + 2 * paragraph
+
+        # manufacturer
+        if product.manufacturer:
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, f"**Производитель:** {product.manufacturer}", markdown=True)
+
+        # --- ГРАФИЧЕСКИЙ БЛОК ---
+
+        x_graphs = margin_left + text_block_width + margin_text_graph
+        floor_margin = 2 * scale
+        floor_height = available_height / 3 - 2 * floor_margin
+
+        # logo
+        if product.logo is not None:
+            size = floor_height
+            x_centered = x_graphs + (graph_block_width - size) / 2
+            pdf.image(product.logo, x=x_centered, y=margin_top, h=size)
+
+        # middle block (QR, EAC/CE)
+        middle_block_y = margin_top + floor_height + floor_margin
+        margin_sub = 2 * scale
+        subblock_width = (graph_block_width - margin_sub) / 2
+
+        if product.qr is not None:
+            qr_size = min(floor_height, subblock_width) * 0.9
+            y_centered = middle_block_y + (floor_height - qr_size) / 2
+            pdf.image(product.qr, x=x_graphs, y=y_centered, h=qr_size)
+
+        right_subblock_x = x_graphs + subblock_width + margin_sub
+        margin_ce_eac = 6 * scale
+        half_floor_height = floor_height / 2 - margin_ce_eac
+        right_subblock_width = graph_block_width / 2 - margin_ce_eac
+
+        if product.eac is not None:
+            coef = 1.152
+            eac_height = half_floor_height
+            eac_width = eac_height * coef
+            if eac_width > right_subblock_width:
+                eac_width = right_subblock_width
+                eac_height = eac_width / coef
+            pdf.image(product.eac, x=right_subblock_x, y=middle_block_y, w=eac_width, h=eac_height)
+
+        if product.ce is not None:
+            coef = 1.028
+            ce_height = half_floor_height
+            ce_width = ce_height * coef
+            if ce_width > right_subblock_width:
+                ce_width = right_subblock_width
+                ce_height = ce_width / coef
+            pdf.image(product.ce, x=right_subblock_x, y=middle_block_y + half_floor_height + margin_ce_eac, w=ce_width,
+                      h=ce_height)
+
+        # barcode floor
+        barcode_y = margin_top + 2 * floor_height + 2 * floor_margin
+        if product.barcode is not None:
+            barcode_height = floor_height
+            coef = 1.417
+            barcode_width = floor_height * coef
+            if barcode_width > graph_block_width:
+                barcode_width = graph_block_width
+                barcode_height = floor_height / coef
+            x_centered = x_graphs + (graph_block_width - barcode_width) / 2
+            pdf.image(product.barcode, x=x_centered, y=barcode_y, w=barcode_width, h=barcode_height)
+
+        # Сохранение
+        filename = f"{product.num}_{product.model}_7x5_landscape.pdf"
+        output_path = os.path.join(self.output_dir, filename)
+        pdf.output(output_path)
+        logger.info(f"PDF saved: {output_path}")
 
 
 # код для тестирования работы с пдф
@@ -375,8 +541,12 @@ if __name__ == "__main__":
                  'ce': '1',
                  'logo': '1',
                  'instruction': 'https://errors.pydantic.dev/2.11/v/value_error'}
-    product = Product.from_dict(test_data)
-    label = Label(prod=product, num="001")
-    label.prepare_all()
+    # product = Product.from_dict(test_data)
+    # label = Label(prod=product, num="001")
+    # label.prepare_all()
+
+    prod = ProductRaw.from_dict(test_data)
+    prod.num = "001"
+    prod.prepare_all()
     stamper = Stamper(save_to=TEST_DIR)
-    stamper.create_7x5(label)
+    stamper.create_7x5_from_prod(product=prod)

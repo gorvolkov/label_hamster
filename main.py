@@ -114,10 +114,13 @@ def new_script(xls_file: str, xls_sheet: str) -> None:
     label_dir_name = f"{filename}_{now_string}"
     label_dir_path = os.path.join(work_dir, label_dir_name)
 
+    logger.debug(f"LABEL DIR {label_dir_name}")
+
     try:
         os.mkdir(label_dir_path)
     except Exception as e:
         logger.error(f"Failed label folder creation: {e}")
+        sys.exit(1)
 
     # read from Excel file
     raw_data: list[dict]
@@ -130,15 +133,6 @@ def new_script(xls_file: str, xls_sheet: str) -> None:
         sys.exit(1)
 
     # убран блок с валидацией в Pydantic
-    # try:
-    #     products = [Product.from_dict(r) for r in raw_data]
-    #     logger.debug("Data validated, OK")
-    #     logger.debug(products)
-    # except Exception as e:
-    #     logger.error(f"Failed data validation: {e}")
-    #     sys.exit(1)
-    #
-    # labels: list[Label] = []
 
     products: list[ProductRaw] = []
     number_length = len(str(len(raw_data)))  # calculate number length
@@ -154,7 +148,7 @@ def new_script(xls_file: str, xls_sheet: str) -> None:
             products.append(product)
         except Exception as e:
             logger.error(f"Failed label creation: {e}")
-            sys.exit(1)
+
 
     logger.debug(products)
     logger.info("Labels successfully prepared")
@@ -174,9 +168,9 @@ if __name__ == "__main__":
     print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
 
     # для тестирования
-    TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
-    print("TEST_FILE = ", TEST_FILE_PATH)
-    print("TEST_SHEET = List1")
+    # TEST_FILE_PATH = os.path.join(TEST_DIR, "INPUT_DATA_EXAMPLE.xlsx")
+    # print("TEST_FILE = ", TEST_FILE_PATH)
+    # print("TEST_SHEET = List1")
 
     # Excel-файл
     xls_file = input("Select Excel file (full path without quotes): ")

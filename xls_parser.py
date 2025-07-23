@@ -28,7 +28,8 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
     """
     try:
         df = pd.read_excel(xls, sheet_name=sheet)
-        df = df.map(lambda x: str(x).strip().replace("\n", " "))  # convert all data into strings and strip all spaces
+        df = df.map(lambda x: str(x).strip())   # обрезать пробелы
+        df = df.map(lambda x: str(x).replace("\n", " ") if x is not None else x)  # убрать переносы
         all_rows = df.to_dict(orient='records')
         return all_rows
     except Exception:

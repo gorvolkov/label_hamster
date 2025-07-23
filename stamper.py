@@ -380,7 +380,7 @@ class Stamper:
         line_height = 3
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, product.model.upper())
+        pdf.multi_cell(text_block_width, line_height, product.model.upper(), align='L')
         y = pdf.get_y() + paragraph
 
         # category
@@ -391,13 +391,15 @@ class Stamper:
         pdf.multi_cell(text_block_width, line_height, product.category)
         y = pdf.get_y() + paragraph
 
-        # description
-        size = 3
-        line_height = 1.5
-        pdf.set_font("ArialTTF", "", size)
-        pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, product.description)
-        y = pdf.get_y() + 2 * paragraph
+        if product.description:
+            # description
+            description_text = product.description.capitalize()
+            size = 3
+            line_height = 1.5
+            pdf.set_font("ArialTTF", "", size)
+            pdf.set_xy(margin_left, y)
+            pdf.multi_cell(text_block_width, line_height, description_text)
+            y = pdf.get_y() + 2 * paragraph
 
         size = 3
         line_height = 1.5
@@ -427,8 +429,11 @@ class Stamper:
             y = pdf.get_y() + 3 * paragraph
 
         # importer/vendor
+        importer_vendor_text = f"**Импортёр / продавец:** {product.importer_vendor}" \
+            if product.manufacturer \
+            else f"**Импортёр и Организация, уполномоченная на принятие претензий:**\n{product.importer_vendor}"
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, f"**Импортёр / продавец:** {product.importer_vendor}",
+        pdf.multi_cell(text_block_width, line_height, importer_vendor_text,
                        markdown=True)
         y = pdf.get_y() + paragraph
 
@@ -452,7 +457,7 @@ class Stamper:
         floor_height = available_height / 3 - 2 * floor_margin
 
         # logo
-        if product.logo is not None:
+        if product.logo:
             size = floor_height
             x_centered = x_graphs + (graph_block_width - size) / 2
             pdf.image(product.logo, x=x_centered, y=margin_top, h=size)
@@ -462,7 +467,7 @@ class Stamper:
         margin_sub = 2 * scale
         subblock_width = (graph_block_width - margin_sub) / 2
 
-        if product.qr is not None:
+        if product.qr:
             qr_size = min(floor_height, subblock_width) * 0.9
             y_centered = middle_block_y + (floor_height - qr_size) / 2
             pdf.image(product.qr, x=x_graphs, y=y_centered, h=qr_size)
@@ -472,7 +477,7 @@ class Stamper:
         half_floor_height = floor_height / 2 - margin_ce_eac
         right_subblock_width = graph_block_width / 2 - margin_ce_eac
 
-        if product.eac is not None:
+        if product.eac:
             coef = 1.152
             eac_height = half_floor_height
             eac_width = eac_height * coef
@@ -481,7 +486,7 @@ class Stamper:
                 eac_height = eac_width / coef
             pdf.image(product.eac, x=right_subblock_x, y=middle_block_y, w=eac_width, h=eac_height)
 
-        if product.ce is not None:
+        if product.ce:
             coef = 1.028
             ce_height = half_floor_height
             ce_width = ce_height * coef
@@ -493,7 +498,7 @@ class Stamper:
 
         # barcode floor
         barcode_y = margin_top + 2 * floor_height + 2 * floor_margin
-        if product.barcode is not None:
+        if product.barcode:
             barcode_height = floor_height
             coef = 1.417
             barcode_width = floor_height * coef
@@ -504,49 +509,49 @@ class Stamper:
             pdf.image(product.barcode, x=x_centered, y=barcode_y, w=barcode_width, h=barcode_height)
 
         # Сохранение
-        filename = f"{product.num}_{product.model}_7x5_landscape.pdf"
+        filename = f"{product.num}_{product.model}.pdf"
         output_path = os.path.join(self.output_dir, filename)
         pdf.output(output_path)
         logger.info(f"PDF saved: {output_path}")
 
 
 # код для тестирования работы с пдф
-if __name__ == "__main__":
-    from models import Label, Product
-
-    test_num = input("test num = ")
-    # test_num = "1"
-    project = {
-        "project_name": "test",
-        "project_folder": "temp/test",
-        "graphs": "temp/test/graphs",
-        "labels": "temp/test/labels"
-    }
-
-    test_data = {'brand': 'stands&cables',
-                 'model': f'Модель {test_num}',
-                 'category': 'Электронная ударная установка',
-                 'description': 'Цвет: черный\nВ комплекте: адаптер питания, микрофон\nТехнические характеристики: 61 миниклавиша, 16 тембров, 10 ритмов\n'
-                                'Питание: 220В-240В, адаптер питания (в комплекте)',
-                 'expiry': '3',
-                 'country': 'Китай',
-                'certification': 'nan',
-                 # 'certification': 'Соответствует требованиям ТР ТС 004/2011 "О безопасности низковольтного оборудования", ТР ТС 020/2011 "Электромагнитная совместимость технических средств", ТР ЕАЭС 037/2016 "Об ограничении применения опасных веществ в изделиях электротехники и радиоэлектроники',
-                 'importer_vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва, Дмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.',
-                  'vendor': 'nan',
-
-                  # 'vendor': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
-                 'manufacturer': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
-                 'eac': '1',
-                 'ce': '1',
-                 'logo': '1',
-                 'instruction': 'https://errors.pydantic.dev/2.11/v/value_error'}
-    # product = Product.from_dict(test_data)
-    # label = Label(prod=product, num="001")
-    # label.prepare_all()
-
-    prod = ProductRaw.from_dict(test_data)
-    prod.num = "001"
-    prod.prepare_all()
-    stamper = Stamper(save_to=TEST_DIR)
-    stamper.create_7x5_from_prod(product=prod)
+# if __name__ == "__main__":
+#     from models import Label, Product
+#
+#     test_num = input("test num = ")
+#     # test_num = "1"
+#     project = {
+#         "project_name": "test",
+#         "project_folder": "temp/test",
+#         "graphs": "temp/test/graphs",
+#         "labels": "temp/test/labels"
+#     }
+#
+#     test_data = {'brand': 'stands&cables',
+#                  'model': f'Модель {test_num}',
+#                  'category': 'Электронная ударная установка',
+#                  'description': 'Цвет: черный\nВ комплекте: адаптер питания, микрофон\nТехнические характеристики: 61 миниклавиша, 16 тембров, 10 ритмов\n'
+#                                 'Питание: 220В-240В, адаптер питания (в комплекте)',
+#                  'expiry': '3',
+#                  'country': 'Китай',
+#                 'certification': 'nan',
+#                  # 'certification': 'Соответствует требованиям ТР ТС 004/2011 "О безопасности низковольтного оборудования", ТР ТС 020/2011 "Электромагнитная совместимость технических средств", ТР ЕАЭС 037/2016 "Об ограничении применения опасных веществ в изделиях электротехники и радиоэлектроники',
+#                  'importer_vendor': 'ООО «Мьюзик лайн» 127474, РФ, г. Москва, Дмитровское шоссе, д. 64. корп. 4, этаж 1, пом. 3, комн. 3.',
+#                   'vendor': 'nan',
+#
+#                   # 'vendor': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
+#                  'manufacturer': 'Aroma Music Co., Ltd. China, Aroma Park, Guwu Village, Danshui town, Huiyang District, Huizhou City, Guangdong, 516200', 'ean13': '6959556904536',
+#                  'eac': '1',
+#                  'ce': '1',
+#                  'logo': '1',
+#                  'instruction': 'https://errors.pydantic.dev/2.11/v/value_error'}
+#     # product = Product.from_dict(test_data)
+#     # label = Label(prod=product, num="001")
+#     # label.prepare_all()
+#
+#     prod = ProductRaw.from_dict(test_data)
+#     prod.num = "001"
+#     prod.prepare_all()
+#     stamper = Stamper(save_to=TEST_DIR)
+#     stamper.create_7x5_from_prod(product=prod)

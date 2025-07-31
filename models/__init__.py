@@ -1,5 +1,4 @@
-from .product import Product
-from .product_ import ProductRaw
-from .label import Label
+from .music_instrument import MusicInstrument
+from .toy import Toy
 
-__all__ = ["Product", "Label", "ProductRaw"]
+__all__ = ["MusicInstrument", "Toy"]

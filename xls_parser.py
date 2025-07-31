@@ -23,7 +23,7 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
     Parses raw data from Excel
 
     :param xls: path to Excel doc
-    :param sheet: sheet name in the Excel doc
+    :param sheet: sheet name
     :return: a dictionary whose keys are column names (1 row)
     """
     try:
@@ -36,14 +36,11 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
         raise
 
 
-
-
-
 if __name__ == "__main__":
-    EXCEL_FILE = "E:\PYCHARM PROJECTS\label_hamster\_tests\INPUT_DATA_TEST.xlsx"
+    EXCEL_FILE = "D:\! DOWNLOADS\JET_FLIGHT_Stickers2025.xlsx"
 
     # лист Excel-файла
-    EXCEL_SHEET = "List1"
+    EXCEL_SHEET = "Лист1"
 
     goods = parse_xls(EXCEL_FILE, EXCEL_SHEET)
     for g in goods:

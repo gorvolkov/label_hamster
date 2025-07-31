@@ -7,7 +7,7 @@ from logger import logger
 from utils import find_logo
 
 
-class ProductRaw:
+class MusicInstrument:
     def __init__(self):
         # number in string format with leading zeros
         self.num: str = ""

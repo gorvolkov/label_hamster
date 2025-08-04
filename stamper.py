@@ -63,11 +63,16 @@ class Stamper:
 
         # --- ТЕКСТОВЫЙ БЛОК ---
         # model
+
+        # строчка для конкатенации бренда и модели
+        title_text = f"{product.brand} {product.model}"
+        # ВНИМАНИЕ! Это может быть нужно не во всех кейсах. Надо уточнить этот момент с БМ
+
         size = 10
         line_height = 4
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, product.model.upper(), align='L')
+        pdf.multi_cell(text_block_width, line_height, title_text, align='L')
         y = pdf.get_y() + paragraph
 
         # category
@@ -214,7 +219,7 @@ class Stamper:
         pdf.image(product.barcode, x=x_centered, y=y, w=barcode_width, h=barcode_height)
 
         # Сохранение
-        filename = f"{product.num}_{product.model}.pdf"
+        filename = f"{product.num}_{title_text}.pdf"
         output_path = os.path.join(self.output_dir, filename)
         pdf.output(output_path)
         logger.info(f"PDF saved: {output_path}")
@@ -254,11 +259,16 @@ class Stamper:
 
         # --- ТЕКСТОВЫЙ БЛОК ---
         # model
+
+        # строчка для конкатенации бренда и модели
+        title_text = f"{product.brand} {product.model}"
+        # ВНИМАНИЕ! Это может быть нужно не во всех кейсах. Надо уточнить этот момент с БМ
+
         size = 6
         line_height = 2.0
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, product.model, align='L')
+        pdf.multi_cell(text_block_width, line_height, title_text, align='L')
         y = pdf.get_y() + paragraph
 
         # category
@@ -350,7 +360,8 @@ class Stamper:
             pdf.image(buf, x=x_barcode, y=y_barcode, w=barcode_width, h=barcode_height)
 
         # Сохранение
-        filename = f"{product.num}_{product.model}.pdf"
+        # ВНИМАНИЕ! Сохраняет с именем текста заголовка (бренд + модель)
+        filename = f"{product.num}_{title_text}.pdf"
         output_path = os.path.join(self.output_dir, filename)
         pdf.output(output_path)
         logger.info(f"PDF saved: {output_path}")

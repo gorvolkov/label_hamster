@@ -101,9 +101,9 @@ if __name__ == "__main__":
     # format = input("Enter format: ")
 
     # для тестирования
-    xls_file = "D:\! DOWNLOADS\EASTTOP_BEE_Stikers2025.xlsx"
+    xls_file = "D:\! DOWNLOADS\JET_FLIGHT_Stickers2025.xlsx"
     xls_sheet = "Лист1"
-    format = "6*4"
+    format = "7*5"
 
     # основной скрипт
     main(xls_file=xls_file, xls_sheet=xls_sheet, format=format)

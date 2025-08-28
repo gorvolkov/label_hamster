@@ -43,14 +43,13 @@ class Stamper:
         margin_right = 2.0
         margin_top = 2.0
         margin_bottom = 2.0
-        margin_between = 0.0 # отступ между текстовым и графическим блоками
 
         available_width = page_width - margin_left - margin_right
         available_height = page_height - margin_top - margin_bottom
 
         # устанавливаем соотношение ширины текстового и графического блоков как 2 : 1
-        graph_block_width = available_width * 0.33 - margin_between / 2
-        text_block_width = available_width - graph_block_width - margin_between / 2
+        graph_block_width = available_width * 0.4
+        text_block_width = available_width - graph_block_width
 
         # отступ между блоками (параграф)
         paragraph = 1.5
@@ -80,14 +79,14 @@ class Stamper:
         line_height = 2
         pdf.set_font("ArialTTF", "B", size)
         pdf.set_xy(margin_left, y)
-        pdf.multi_cell(text_block_width, line_height, product.category)
+        pdf.multi_cell(text_block_width, line_height, product.category.capitalize())
         y = pdf.get_y() + paragraph
 
         # compose tiny block
         tiny = []
 
         if product.description:
-            tiny.append(f"{product.description}\n")
+            tiny.append(f"{product.description.capitalize()}\n")
 
         # expiry and country block
         exp_and_country = []
@@ -135,87 +134,61 @@ class Stamper:
 
         # --- ГРАФИЧЕСКИЙ БЛОК ---
 
-        x_graphs = margin_left + text_block_width + margin_between
+        x_graphs_left = margin_left + text_block_width   # левая граница графического блока
 
-        # высота "этажа" с графикой
-        floor_height = available_height / 3
+        # LOGO
 
-        # logo
+        floor_h = available_height / 4    # высота 1/4
+        y = margin_top
+
         if product.logo:
-            # масштабируем логотип под размер высоты "этажа"
-            size = floor_height
+            logo_size = floor_h
+            x_logo_centered = x_graphs_left + (graph_block_width - logo_size) / 2   # центрирование изображения
+            pdf.image(product.logo, x_logo_centered, y, logo_size)    # вставка по центру с масштабированием под нужный размер
 
-            # координаты
-            x_centered = x_graphs + (graph_block_width - size) / 2
-            y_top_floor = margin_top
+        y = margin_top + floor_h    # сдвигаем курсор
 
-            # вставка
-            pdf.image(product.logo, x=x_centered, y=y_top_floor, h=size)
-
-        # middle block (QR, EAC/CE)
-
-        # вертикальная координата
-        y_mid_floor = margin_top + floor_height
-
-        # отступ между QR и EAC/CE, по умолчанию 1 мм
-        margin_sub = margin_between
-        subblock_width = (graph_block_width - margin_sub) / 2
+        # MIDDLE_BLOCK (QR, EAC/CE)
+        half_graph_w = graph_block_width / 2    # половина ширины графического блока
+        x_graphs_center = x_graphs_left + half_graph_w    # серединная координата
 
         if product.qr:
-            qr_size = min(floor_height, subblock_width)
-            y_centered = y_mid_floor + (floor_height - qr_size) / 2
-            pdf.image(product.qr, x=x_graphs, y=y_centered, h=qr_size)
+            qr_size = min(floor_h, half_graph_w)
+            x = x_graphs_center - qr_size    # вычисляем левую границу qr от серединной оси блока, по левой границе всего блока - некрасиво
+            pdf.image(product.qr, x, y, qr_size)
 
-        right_subblock_x = x_graphs + subblock_width + margin_sub
-        margin_ce_eac = margin_between
-        half_floor_height = floor_height / 2
-        right_subblock_width = graph_block_width / 2
+        half_floor_h = floor_h / 2
 
         if product.eac:
-            eac_height = half_floor_height
-            eac_width = eac_height
-            if eac_width > right_subblock_width:
-                eac_width = right_subblock_width
-                eac_height = eac_width
-            pdf.image(product.eac, x=right_subblock_x, y=y_mid_floor, w=eac_width, h=eac_height)
+            eac_size = min(half_floor_h, half_graph_w)
+            x = x_graphs_center + (half_graph_w - eac_size) / 2    # вычисляем координату для вставки по центру правого полу-блока
+            pdf.image(product.eac, x, y, eac_size)
+
+        y += half_floor_h
 
         if product.ce:
-            ce_height = half_floor_height
-            ce_width = ce_height
-            if ce_width > right_subblock_width:
-                ce_width = right_subblock_width
-                ce_height = ce_width
-            pdf.image(product.ce, x=right_subblock_x, y=y_mid_floor + half_floor_height + margin_ce_eac, w=ce_width,
-                      h=ce_height)
+            ce_size = min(half_floor_h, half_graph_w)
+            x = x_graphs_center + (half_graph_w - ce_size) / 2     # вычисляем координату для вставки по центру правого полу-блока
+            pdf.image(product.ce, x, y, ce_size)
 
-        # barcode
-        # координата по высоте
-        y = margin_top + 2 * floor_height
+        y += half_floor_h
+
+        # BARCODE
+        floor_h = floor_h * 2   # для ШК высота этажа 2/4 всей доступной
 
         # масштабируем исходное изображение под нужный размер блока
         with Image.open(product.barcode) as img:
             orig_width, orig_height = img.size
-            aspect_ratio = orig_width / orig_height
-        max_width = graph_block_width
-        max_height = floor_height
 
-        if aspect_ratio >= 1:
-            # Ширина больше или равна высоте, ширина ограничивает
-            barcode_width = min(orig_width, max_width)
-            barcode_height = barcode_width / aspect_ratio
-            if barcode_height > max_height:
-                barcode_height = max_height
-                barcode_width = barcode_height * aspect_ratio
-        else:
-            # Высота больше ширины, высота ограничивает
-            barcode_height = min(orig_height, max_height)
-            barcode_width = barcode_height * aspect_ratio
-            if barcode_width > max_width:
-                barcode_width = max_width
-                barcode_height = barcode_width / aspect_ratio
+        if orig_width > graph_block_width:
+            barcode_width = orig_width
+            barcode_height = orig_height / orig_width * barcode_width
+
+        barcode_height = floor_h
+        barcode_width = orig_width / orig_height * barcode_height
 
         # координата по горизонтали для вставки по центру
-        x_centered = x_graphs + (graph_block_width - barcode_width) / 2
+        x_centered = x_graphs_left + (graph_block_width - barcode_width) / 2
         pdf.image(product.barcode, x=x_centered, y=y, w=barcode_width, h=barcode_height)
 
         # Сохранение

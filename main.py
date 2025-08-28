@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # format = input("Enter format: ")
 
     # для тестирования
-    xls_file = "D:\! DOWNLOADS\JET_FLIGHT_Stickers2025.xlsx"
+    xls_file = "D:\! DOWNLOADS\ТермосыСтикеры.xlsx"
     xls_sheet = "Лист1"
     format = "7*5"
 

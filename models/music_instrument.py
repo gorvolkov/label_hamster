@@ -35,7 +35,7 @@ class MusicInstrument:
         self.qr: Optional[str] = ""
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'ProductRaw':
+    def from_dict(cls, data: dict) -> 'MusicInstrument':
         prod = cls()
         for key, value in data.items():
             if hasattr(prod, key):

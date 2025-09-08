@@ -37,7 +37,7 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
 
 
 if __name__ == "__main__":
-    EXCEL_FILE = "D:\! DOWNLOADS\JET_FLIGHT_Stickers2025.xlsx"
+    EXCEL_FILE = "E:\ДИНАТОН\Этикетки\WB\Стикеры ВБ FBO_decompose.xlsx"
 
     # лист Excel-файла
     EXCEL_SHEET = "Лист1"

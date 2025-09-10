@@ -2,10 +2,10 @@ import datetime
 import sys
 import os
 
-from config import REQUIRED_DATA_FIELDS, TEMP_DIR, TEST_DIR
+from config import REQUIRED_DATA_FIELDS, TEMP_DIR
 from logger import logger
-from models import MusicInstrument, Toy, ProductWB
-from stamper import Stamper
+from models import MusicInstrument, ProductWB
+from stampers.stamper import Stamper
 from utils import setup_workdir, cleanup_temp
 from xls_parser import check_xls, parse_xls
 
@@ -94,14 +94,6 @@ def main_wb(xls_file: str, xls_sheet: str) -> None:
     :param xls_sheet: list name in Excel file
     """
 
-    # # check Excel files columns are correct
-    # try:
-    #     check_xls(required=REQUIRED_DATA_FIELDS, xls=xls_file, sheet=xls_sheet)
-    #     logger.info("Excel file is checked; OK")
-    # except Exception as e:
-    #     logger.error(f"Excel file check failed: {e}")
-    #     sys.exit(1)
-
     # create label output folder
     work_dir = os.path.dirname(os.path.abspath(xls_file))
     filename = os.path.basename(xls_file).split(".")[0]
@@ -144,46 +136,30 @@ def main_wb(xls_file: str, xls_sheet: str) -> None:
         except Exception as e:
             logger.error(f"Failed label creation: {e}")
 
-    logger.debug(products)
     logger.info("Labels successfully prepared")
 
-    from stamper import stamp_for_wb
+    from stampers.stamper import stamp_for_wb, stamp_for_wb_with_ean_barcode_h
 
     for product in products:
         try:
             stamp_for_wb(product, label_dir_path)
+            stamp_for_wb_with_ean_barcode_h(product, label_dir_path)
         except Exception as e:
             logger.error(f"Failed stamping label {product.num}: {e}")
 
+
 if __name__ == "__main__":
-    # создание директории для временных файлов
-    setup_workdir(temp_dir=TEMP_DIR)
+    setup_workdir(temp_dir=TEMP_DIR)    # create workdir
+    logger.info('Started')
 
-
-    print("Hi! I'm Label Hamster. I read excel sheets and produce labels for your goods.")
-
-    # блок ввода
-    # # Excel-файл
-    # xls_file = input("Select Excel file (full path without quotes): ")
-    #
-    # # лист таблицы
-    # xls_sheet = input("Select sheet: ")
-    #
-    # # формат
-    # # добавить проверку на поддерживаемые форматы, вынести их в конфиги можно вообще
-    # format = input("Enter format: ")
-
-    # для тестирования
-    xls_file = "E:\ДИНАТОН\Этикетки\WB\Стикеры ВБ FBO_decompose.xlsx"
+    # input
+    xls_file = "D:\! DOWNLOADS\Стикеры ВБ FBO.xlsx"
     xls_sheet = "Лист1"
     format = "7*5"
 
-    # основной скрипт
     # main(xls_file, xls_sheet, format)
 
     main_wb(xls_file, xls_sheet)
-    print("All labels were stamped, yo-hoo!")
 
-    # удаление временных файлов
-    cleanup_temp(dir=TEMP_DIR)
-    print("...and I always clean it up after myself.")
+    cleanup_temp(dir=TEMP_DIR)    # cleanup workdir
+    logger.info("Finished.")

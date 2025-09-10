@@ -1,6 +1,6 @@
 import os
 
-from generators import gen_barcode_orcascan_narrow
+from generators import gen_barcode_orcascan_narrow, gen_barcode_orcascan
 from config import TEMP_DIR
 from logger import logger
 
@@ -13,7 +13,7 @@ class ProductWB:
         # text data
         self.title: str = ""
         self.art: str = ""
-        self.vendor: str = ""
+        self.description: str = ""
         self.barcode: str = ""
         self.barcode_path: str = ""
 
@@ -27,23 +27,23 @@ class ProductWB:
                 setattr(prod, key, cleared_value)
         return prod
 
-    def __repr__(self):
-        return (
-            f"ProductWB(num={self.num!r}, title={self.title!r}, art={self.art!r}, "
-            f"vendor={self.vendor!r}, barcode_data={self.barcode!r}, barcode_path={self.barcode_path!r}"
-        )
-
-    def __str__(self):
-        return (
-            f"ProductRaw:\n"
-            f"  num: {self.num}\n"
-            f"  title: {self.title}\n"
-            f"  art: {self.art}\n"
-            f"  vendor: {self.vendor}\n"
-            f"  barcode: {self.barcode}\n"
-            f"  barcode_path: {self.barcode_path}\n"
-        )
-
+    # def __repr__(self):
+    #     return (
+    #         f"ProductWB(num={self.num!r}, title={self.title!r}, art={self.art!r}, "
+    #         f"vendor={self.vendor!r}, barcode_data={self.barcode!r}, barcode_path={self.barcode_path!r}"
+    #     )
+    #
+    # def __str__(self):
+    #     return (
+    #         f"ProductRaw:\n"
+    #         f"  num: {self.num}\n"
+    #         f"  title: {self.title}\n"
+    #         f"  art: {self.art}\n"
+    #         f"  vendor: {self.vendor}\n"
+    #         f"  barcode: {self.barcode}\n"
+    #         f"  barcode_path: {self.barcode_path}\n"
+    #     )
+    #
 
     def attach_barcode(self):
         """Generate barcode and attach link to an object"""
@@ -51,9 +51,10 @@ class ProductWB:
         barcode_path = os.path.join(TEMP_DIR, barcode_name)
         print(barcode_name, barcode_path)
         try:
-            gen_barcode_orcascan_narrow(data=self.barcode, file=barcode_path)
+            # gen_barcode_orcascan_narrow(data=self.barcode, file=barcode_path)
+            gen_barcode_orcascan(self.barcode, barcode_path)
             self.barcode_path = barcode_path
-        except Exception:
+        except Exception:   # noqa
             logger.error("Failed barcode generation")
 
 

@@ -1,5 +1,4 @@
 import os.path
-
 import requests
 
 def gen_barcode_orcascan(ean: str, save_to: str) -> None:
@@ -20,11 +19,6 @@ def gen_barcode_orcascan(ean: str, save_to: str) -> None:
         raise Exception("Something went wrong")
 
 
-#  можно дописать для локальной генерации ШК
-def gen_barcode_locally() -> None:
-    """Generate barcode locally without any API usage"""
-    pass
-
 
 def gen_barcode_orcascan_narrow(data: str, file: str) -> None:
     """
@@ -42,10 +36,3 @@ def gen_barcode_orcascan_narrow(data: str, file: str) -> None:
             f.write(response.content)
     else:
         raise Exception("Something went wrong")
-
-
-if __name__ == "__main__":
-    from config import TEMP_DIR
-    test_file = os.path.join(TEMP_DIR, "01_barcode.png")
-
-    gen_barcode_orcascan_narrow(data="3831120939683", file=test_file)

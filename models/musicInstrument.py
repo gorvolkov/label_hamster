@@ -111,8 +111,7 @@ class MusicInstrument:
         except Exception:
             logger.error("No logo was found")
 
-
-    def prepare_all(self) -> None:
+    def prepare(self) -> None:
         self.attach_barcode()
         logger.debug("Barcode generated and attached")
 

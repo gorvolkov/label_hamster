@@ -1,4 +1,6 @@
 import pandas as pd
+from logger import logger
+
 
 def check_xls(required: set, xls: str, sheet: str):
     """Check that all the necessary columns are present in the excel table"""
@@ -31,9 +33,11 @@ def parse_xls(xls: str, sheet: str) -> list[dict[str, str]]:
         df = df.map(lambda x: str(x).strip())   # обрезать пробелы
         df = df.map(lambda x: str(x).replace("\n", " ") if x is not None else x)  # убрать переносы
         all_rows = df.to_dict(orient='records')
+        logger.info("Tha data from Excel successfully read")
+        logger.debug(all_rows)
         return all_rows
-    except Exception:
-        raise
+    except Exception as e:
+        logger.error(f"Failed to read data from Excel: {e}")
 
 
 if __name__ == "__main__":

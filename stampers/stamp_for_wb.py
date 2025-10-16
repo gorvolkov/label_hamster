@@ -1,13 +1,12 @@
 import os
 from fpdf import FPDF
-from PIL import Image
 
 from logger import logger
 from models import ProductWB
-from . stamper_conf import _init_fonts
+from . _setup_fonts import setup_fonts
+from . _scale_img import scale_img
 
-
-def stamp_for_wb_with_ean_barcode_h(product: ProductWB, save_to: str):
+def stamp_for_wb(product: ProductWB, save_to: str):
     """
     Create label 60 mm x 40 mm for Wildberries format, pdf.
 
@@ -15,13 +14,12 @@ def stamp_for_wb_with_ean_barcode_h(product: ProductWB, save_to: str):
     :param save_to: path to directory the new label will be saved to.
     """
 
-
     page_width, page_height = 60.0, 40.0  # мм
 
     pdf = FPDF(unit='mm', format=(page_width, page_height))
     pdf.add_page()
 
-    _init_fonts(pdf)  # инициализация шрифтов
+    setup_fonts(pdf)  # initialize fonts for PDF document
 
     margin_left = 2.0
     margin_right = 2.0
@@ -30,9 +28,7 @@ def stamp_for_wb_with_ean_barcode_h(product: ProductWB, save_to: str):
 
     width = page_width - margin_left - margin_right
     height = page_height - margin_top - margin_bottom
-
-    # междустрочный интервал
-    paragraph = 1.0
+    paragraph = 1.0   # interval between the lines
 
     # явное указание переноса, который осуществляется только по margin_bottom
     pdf.set_auto_page_break(auto=True, margin=margin_bottom)
@@ -53,36 +49,29 @@ def stamp_for_wb_with_ean_barcode_h(product: ProductWB, save_to: str):
     line_height = 2.0
     pdf.set_font("ArialTTF", "", size)
     pdf.set_xy(margin_left, y)
-    pdf.multi_cell(width, line_height, product.description, align='L')
+
+    description = product.description.capitalize()
+
+    pdf.multi_cell(width, line_height, description, align='L')
     y = pdf.get_y()
 
-    # art
-    art = f"Артикул: {product.art}"
+    # stock_id
+    stock_id = f"Артикул: {product.stock_id}"
     size = 6
     line_height = 2.0
     pdf.set_font("ArialTTF", "", size)
     pdf.set_xy(margin_left, y)
-    pdf.multi_cell(width, line_height, art, align='L')
+    pdf.multi_cell(width, line_height, stock_id, align='L')
     y = pdf.get_y() + paragraph
 
     # barcode
-    bc_height = height - y
-
-    with Image.open(product.barcode_path) as img:
-        orig_width, orig_height = img.size    # pixels
-
-        dpi = img.info.get('dpi', (72, 72))[0]    # convert to mm
-        orig_width_mm = orig_width / dpi * 25.4
-        orig_height_mm = orig_height / dpi * 25.4
-
-        resize_coef = bc_height / orig_height_mm
-        bc_width = orig_width_mm * resize_coef
-
-    x = (page_width - bc_width) / 2
+    barcode = product.barcode_path
+    bc_width, bc_height = scale_img(barcode, width, height - y)    # scale image
+    x = (page_width - bc_width) / 2     # center position of scaled barcode
     pdf.image(product.barcode_path, x, y, w=bc_width, h=bc_height)
 
     # save label
-    filename = f"{product.num}_{product.art}.pdf"
+    filename = f"{product.num}_{product.stock_id}.pdf"
     output_path = os.path.join(save_to, filename)
     pdf.output(output_path)
     logger.info(f"PDF saved: {output_path}")

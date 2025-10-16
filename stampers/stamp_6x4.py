@@ -10,7 +10,7 @@ from . _setup_fonts import setup_fonts
 from . _scale_img import scale_img
 
 
-def stamp_6x4(self, product: MusicInstrument):
+def stamp_6x4(product: MusicInstrument, save_to: str):
     """Create label 60 mm x 40 mm, pdf"""
 
     # Размер страницы 6 см по ширине и 4 см по высоте (альбомная ориентация)
@@ -120,7 +120,6 @@ def stamp_6x4(self, product: MusicInstrument):
     max_height = available_height  # ограничение по высоте, мм
 
     barcode = product.barcode
-
     bc_width, bc_height = scale_img(barcode, max_height, max_width)
 
     with Image.open(product.barcode) as img:
@@ -133,11 +132,10 @@ def stamp_6x4(self, product: MusicInstrument):
         buf.seek(0)
 
         # вставляем в файл этикетки
-        pdf.image(buf, x, y, bc_width, bc_height)
+        pdf.image(buf, x, y, w=bc_height, h=bc_width)
 
     # Сохранение
-    # ВНИМАНИЕ! Сохраняет с именем текста заголовка (бренд + модель)
     filename = f"{product.num}_{title_text}.pdf"
-    output_path = os.path.join(self.output_dir, filename)
+    output_path = os.path.join(save_to, filename)
     pdf.output(output_path)
     logger.info(f"PDF saved: {output_path}")

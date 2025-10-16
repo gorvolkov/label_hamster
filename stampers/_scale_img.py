@@ -1,8 +1,9 @@
 from PIL import Image
 
+
 def scale_img(image: str, w_limit: float, h_limit: float) -> tuple[float, float]:
     """
-    Resize image its preserving proportions
+    Resize image preserving proportions
 
     :param image: path to origin image
     :param w_limit: max possible width in milimmetres
@@ -22,8 +23,12 @@ def scale_img(image: str, w_limit: float, h_limit: float) -> tuple[float, float]
     scale_w = w_limit / w_orig_mm
     scale_h = h_limit / h_orig_mm
 
-    # Take the smaller scale to preserve aspect ratio:
-    scale = min(scale_w,scale_h)
+    # Take the smaller scale if one of sizes of original image is greater than required;
+    # otherwise greater scale:
+    if w_orig_mm >= w_limit or h_orig_mm >= h_limit:
+        scale = min(scale_w,scale_h)
+    else:
+        scale = max(scale_w,scale_h)
 
     w_new = w_orig_mm * scale
     h_new = h_orig_mm * scale

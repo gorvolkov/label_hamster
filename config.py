@@ -21,22 +21,3 @@ CE_IMAGE = os.path.join(STATIC_FILES_FOLDER, "CE.png")
 
 # файл изображения маркировки EAC
 EAC_IMAGE = os.path.join(STATIC_FILES_FOLDER, "EAC.png")
-
-# названия полей во входной Excel-таблице
-REQUIRED_DATA_FIELDS = required_fields = {
-    "brand",
-    "model",
-    "category",
-    "description",
-    "expiry",
-    "country",
-    "certification",
-    "importer_vendor",
-    "vendor",
-    "manufacturer",
-    "ean13",
-    "eac",
-    "ce",
-    "logo",
-    "instruction"
-}

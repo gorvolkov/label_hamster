@@ -1,6 +1,4 @@
 import datetime
-import sys
-import os
 from pathlib import Path
 
 from config import TEMP_DIR
@@ -9,6 +7,7 @@ from models import MusicInstrument, ProductWB
 from stampers import stamp_for_wb, stamp_6x4, stamp_7x5
 from utils import setup_workdir, cleanup_temp
 from xls_parser import parse_xls
+
 
 FORMATS = {
     "7x5": {
@@ -26,13 +25,16 @@ FORMATS = {
 }
 
 
-def main(file: str, sheet: str, format: str = "") -> None:
+def main(file: str, sheet: str, format: str) -> None:
     """
-    NEW main script
+    Main func
 
-    :param file: path to Excel file with data
-    :param sheet: list name in Excel file
+    :param file: path to file
+    :param sheet: sheet of the file
+    :param format: required format of the label
     """
+    setup_workdir(temp_dir=TEMP_DIR)    # create workdir if not exists
+    logger.info('Started')
 
     # create output folder
     xls_path = Path(file)
@@ -53,93 +55,32 @@ def main(file: str, sheet: str, format: str = "") -> None:
     number_length = len(str(len(raw_data)))
 
     # main cycle
-    for idx, row in enumerate(raw_data, start=1):
+    for idx, row in enumerate(raw_data[:1], start=1):
         num = f"{idx:0{number_length}d}"    # get current item number with leading zeros
 
         try:
             product = model.from_dict(row)
             product.num = num
+
+            # prepare graphics
             product.prepare()
             logger.info("Successfully prepared")
+
             # stamp label
             stamp(product, label_dir)    # noqa
             logger.info("Stamped")
+
         except Exception as e:
             logger.error(f"Failed stamping label {num}: {e}")
 
+    # cleanup_temp(dir=TEMP_DIR)    # cleanup workdir
+    # logger.info("Finished.")
 
 
-# def main_wb(xls_file: str, xls_sheet: str) -> None:
-#     """
-#     NEW main script
-#
-#     :param xls_file: path to Excel file with data
-#     :param xls_sheet: list name in Excel file
-#     """
-#
-#     # create label output folder
-#     work_dir = os.path.dirname(os.path.abspath(xls_file))
-#     filename = os.path.basename(xls_file).split(".")[0]
-#
-#     # postfix with time attached for uniqueness if restart will be required
-#     now = datetime.datetime.now()
-#     now_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-#     label_dir_name = f"{filename}_{now_string}"
-#     label_dir_path = os.path.join(work_dir, label_dir_name)
-#     logger.debug(f"LABEL DIR {label_dir_name}")
-#
-#     try:
-#         os.mkdir(label_dir_path)
-#     except Exception as e:
-#         logger.error(f"Failed label folder creation: {e}")
-#         sys.exit(1)
-#
-#     # read from Excel file
-#     raw_data: list[dict]
-#     try:
-#         raw_data = parse_xls(xls=xls_file, sheet=xls_sheet)
-#         logger.info("Tha data from Excel successfully read")
-#         logger.debug(raw_data)
-#     except Exception as e:
-#         logger.error(f"Failed to read data from Excel: {e}")
-#         sys.exit(1)
-#
-#     products: list[ProductWB] = []
-#     number_length = len(str(len(raw_data)))  # calculate number length
-#
-#     for idx, row in enumerate(raw_data, start=1):
-#         # get curr number with leading zeros
-#         num = f"{idx:0{number_length}d}"
-#
-#         try:
-#             product = ProductWB.from_dict(row)
-#             product.num = num
-#             product.prepare()
-#             products.append(product)
-#         except Exception as e:
-#             logger.error(f"Failed label creation: {e}")
-#
-#     logger.info("Labels successfully prepared")
-#
-#     for product in products:
-#         try:
-#             stamp_for_wb(product, label_dir_path)
-#         except Exception as e:
-#             logger.error(f"Failed stamping label {product.num}: {e}")
-#
 
 if __name__ == "__main__":
-    setup_workdir(temp_dir=TEMP_DIR)    # create workdir
-    logger.info('Started')
-
-    # input
-    file = "D:\! DOWNLOADS\EASTTOP_BEE_Stikers2025_6х4.xlsx"
-    sheet = "Лист1"
+    xls_file = "D:\! DOWNLOADS\EASTTOP_BEE_Stikers2025_6х4.xlsx"
+    xls_sheet = "Лист1"
     label_format = "7x5"
-    #
-    main(fr"{file}", sheet, label_format)
 
-    # main_wb(file, sheet)
-
-    cleanup_temp(dir=TEMP_DIR)    # cleanup workdir
-    logger.info("Finished.")
+    main(xls_file, xls_sheet, label_format)

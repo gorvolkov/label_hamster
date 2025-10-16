@@ -16,7 +16,7 @@ def stamp_7x5(product: MusicInstrument, save_to: str):
     setup_fonts(pdf)
 
     margin_left = 2.0
-    margin_right = 5.0
+    margin_right = 2.0
     margin_top = 2.0
     margin_bottom = 2.0
 
@@ -51,7 +51,7 @@ def stamp_7x5(product: MusicInstrument, save_to: str):
     line_height = 2
     pdf.set_font("ArialTTF", "B", size)
     pdf.set_xy(margin_left, y)
-    pdf.multi_cell(text_block_width, line_height, product.category.capitalize())
+    pdf.multi_cell(text_block_width, line_height, product.category.capitalize(), align='L')
     y = pdf.get_y() + paragraph
 
     # compose tiny block
@@ -147,21 +147,13 @@ def stamp_7x5(product: MusicInstrument, save_to: str):
     y += half_floor_h
 
     # BARCODE
+    barcode = product.barcode
     floor_h = floor_h * 2  # для ШК высота этажа 2/4 всей доступной
 
-    # # масштабируем исходное изображение под нужный размер блока
-    # with Image.open(product.barcode) as img:
-    #     orig_width, orig_height = img.size
-    #
-    # if orig_width > graph_block_width:
-    #     barcode_width = graph_block_width
-    #     barcode_height = orig_height / orig_width * barcode_width
-    #
-    # barcode_height = floor_h
-    # barcode_width = orig_width / orig_height * barcode_height
-
-    barcode = product.barcode
-    bc_width, bc_height = scale_img(barcode, graph_block_width, floor_h)
+    # use all place without margins because barcode has mergins itself
+    h_limit = floor_h + margin_bottom
+    w_limit = graph_block_width + margin_right
+    bc_width, bc_height = scale_img(barcode, w_limit, h_limit)
     pdf.image(barcode, x_graphs_left, y, w=bc_width, h=bc_height)
 
     # Сохранение

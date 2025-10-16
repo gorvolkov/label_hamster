@@ -1,7 +1,6 @@
 import os
 import io
 
-from fontTools.misc.testTools import makeXMLWriter
 from fpdf import FPDF
 from PIL import Image
 
@@ -47,10 +46,7 @@ def stamp_6x4(self, product: MusicInstrument):
     # --- ТЕКСТОВЫЙ БЛОК ---
     # model
 
-    # строчка для конкатенации бренда и модели
     title_text = f"{product.brand} {product.model}"
-    # ВНИМАНИЕ! Это может быть нужно не во всех кейсах. Надо уточнить этот момент с БМ
-
     size = 6
     line_height = 2.0
     pdf.set_font("ArialTTF", "B", size)
@@ -130,15 +126,6 @@ def stamp_6x4(self, product: MusicInstrument):
     with Image.open(product.barcode) as img:
         # Поворот изображения на 90 градусов против часовой стрелки
         img_rotated = img.rotate(90, expand=True)
-
-        # rot_width_px, rot_height_px = img_rotated.size  # размеры в пикселях после поворота
-        # aspect_ratio = rot_width_px / rot_height_px  # отношение ширины к высоте после поворота
-        #
-        # barcode_height = min(rot_height_px, max_height)
-        # barcode_width = barcode_height * aspect_ratio
-        # if barcode_width > max_width:
-        #     barcode_width = max_width
-        #     barcode_height = barcode_width / aspect_ratio
 
         # Сохраняем повернутое изображение во временный буфер
         buf = io.BytesIO()

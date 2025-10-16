@@ -6,7 +6,7 @@ from pathlib import Path
 from config import TEMP_DIR
 from logger import logger
 from models import MusicInstrument, ProductWB
-from stampers import stamp_for_wb, stamp_6x5, stamp_7x5
+from stampers import stamp_for_wb, stamp_6x4, stamp_7x5
 from utils import setup_workdir, cleanup_temp
 from xls_parser import parse_xls
 
@@ -17,7 +17,7 @@ FORMATS = {
     },
     "6x4": {
         "model": MusicInstrument,
-        "stamper": stamp_6x5
+        "stamper": stamp_6x4
     },
     "WB": {
         "model": ProductWB,
@@ -133,9 +133,9 @@ if __name__ == "__main__":
     logger.info('Started')
 
     # input
-    file = "D:\! DOWNLOADS\Стикеры ВБ FBO капсулы.xlsx"
+    file = "D:\! DOWNLOADS\EASTTOP_BEE_Stikers2025_6х4.xlsx"
     sheet = "Лист1"
-    label_format = "WB"
+    label_format = "7x5"
     #
     main(fr"{file}", sheet, label_format)
 

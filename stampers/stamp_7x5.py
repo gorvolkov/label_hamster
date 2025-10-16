@@ -38,11 +38,7 @@ def stamp_7x5(product: MusicInstrument, save_to: str):
 
     # --- ТЕКСТОВЫЙ БЛОК ---
     # model
-
-    # строчка для конкатенации бренда и модели
     title_text = f"{product.brand} {product.model}"
-    # ВНИМАНИЕ! Это может быть нужно не во всех кейсах. Надо уточнить этот момент с БМ
-
     size = 10
     line_height = 4
     pdf.set_font("ArialTTF", "B", size)
@@ -113,7 +109,6 @@ def stamp_7x5(product: MusicInstrument, save_to: str):
     x_graphs_left = margin_left + text_block_width  # левая граница графического блока
 
     # LOGO
-
     floor_h = available_height / 4  # высота 1/4
     y = margin_top
 
